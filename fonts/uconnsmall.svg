@@ -1,0 +1,33 @@
+<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" > <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+<defs >
+<font id="uconnsmall" horiz-adv-x="505" ><font-face
+    font-family="Untitled"
+    units-per-em="1000"
+    panose-1="0 0 0 0 0 0 0 0 0 0"
+    ascent="800"
+    descent="-200"
+    alphabetic="0" />
+<missing-glyph horiz-adv-x="500" d="M63 0V800H438V0H63V0ZM125 63H375V738H125V63V63Z" />
+<glyph unicode=" " glyph-name="space" horiz-adv-x="333" />
+<glyph unicode="5" glyph-name="five" horiz-adv-x="333" />
+<glyph unicode="C" glyph-name="C" horiz-adv-x="866" d="M517 515Q479 527 433 527Q386 527 349 515V286Q386 274 433 274Q479 274 517 286V358H601V243Q566 223 524 212T433 201Q385 201 342 212T264 243V557Q335 600 433 600Q530 600 601 557V459H517V515V515Z" />
+<glyph unicode="J" glyph-name="J" horiz-adv-x="333" />
+<glyph unicode="K" glyph-name="K" horiz-adv-x="333" />
+<glyph unicode="L" glyph-name="L" horiz-adv-x="333" />
+<glyph unicode="M" glyph-name="M" horiz-adv-x="333" />
+<glyph unicode="N" glyph-name="N" horiz-adv-x="834" d="M508 590H585V213H495L328 481H325V213H249V590H339L506 323H508V590Z" />
+<glyph unicode="O" glyph-name="O" horiz-adv-x="778" d="M220 558Q255 578 298 589T389 600Q437 600 480 589T558 558V243Q523 223 480 212T389 201Q341 201 298 212T220 243V558V558ZM473 515Q435 527 389 527Q342 527 305 515V286Q342 274 389 274Q435 274
+473 286V515Z" />
+<glyph unicode="U" glyph-name="U" horiz-adv-x="762" d="M465 584H550V238Q515 218 472 207T381 195Q333 195 290 206T212 238V584H297V280Q316 275 336 269T381 263Q405 263 425 269T465 280V584Z" />
+<glyph unicode="Y" glyph-name="Y" horiz-adv-x="333" />
+<hkern g1="C" g2="C" k="124" />
+<hkern g1="C" g2="N" k="820" />
+<hkern g1="N" g2="C" k="123" />
+<hkern g1="N" g2="N" k="822" />
+<hkern g1="O" g2="C" k="124" />
+<hkern g1="O" g2="N" k="819" />
+<hkern g1="U" g2="C" k="123" />
+<hkern g1="U" g2="N" k="820" />
+</font>
+</defs>
+</svg>

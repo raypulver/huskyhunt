@@ -1,0 +1,4 @@
+<?php
+
+$ADMIN = new HuskyHuntAdmin();
+

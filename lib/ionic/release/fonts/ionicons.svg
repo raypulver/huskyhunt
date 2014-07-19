@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd" > <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+<defs >
+<font horiz-adv-x="380" ><font-face
+    font-family="Ionicons"
+    units-per-em="512"
+    panose-1="0 0 0 0 0 0 0 0 0 0"
+    ascent="448"
+    descent="-64"
+    alphabetic="0" />
+<missing-glyph horiz-adv-x="187" d="M17 0V341H153V0H17ZM34 17H136V324H34V17Z" />
+<glyph unicode=" " glyph-name="space" horiz-adv-x="128" />
+</font>
+</defs>
+</svg>

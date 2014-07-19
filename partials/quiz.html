@@ -1,0 +1,10 @@
+<ion-view title="{{module.name}}">
+  <ion-content has-header="true" has-footer="true" padding="true">
+    <h2>{{module.question}}</h2>
+    <br>
+    <div class="list">
+      <ion-radio ng-repeat="answer in module.answers" ng-value="module.answers.indexOf(answer)" ng-model="$parent.$parent.choice">{{answer | strip}}</ion-radio>
+      <button class="button button-full button-stable" ng-click="submit()">Submit</button>
+    </div>
+  </ion-content>
+</ion-view>

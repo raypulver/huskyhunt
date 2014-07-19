@@ -1,0 +1,53 @@
+@font-face {
+  font-family: 'uconn';
+  src: url('../fonts/uconn.eot');
+  src: url('../fonts/uconn.svg#uconn') format('svg'),
+    url('../fonts/uconn.eot#iefix'),
+    url('../fonts/uconn.woff') format('woff'),
+    url('../fonts/uconn.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+img#huskyhunt-logo {
+  max-width: 100%;
+  display: block;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto
+}
+img.badge {
+/*  max-width: 30%;*/
+  margin: 2px;
+}
+img.grayscale {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: grayscale(100%);
+}
+.item,
+.item h1,
+.item h2,
+.item h3,
+.item h4,
+.item h6,
+.item p,
+.item-content,
+.item-content h1,
+.item-content h2,
+.item-content h3,
+.item-content h4,
+.item-content h5,
+.item-content h6,
+.item-content p {
+  overflow: visible;
+  white-space: normal;
+}
+div.badge-name {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #000040;
+  margin-bottom: 3px;
+}
+span.badge-description {
+  font-size: 0.9em;
+}

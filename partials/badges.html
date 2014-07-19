@@ -1,0 +1,17 @@
+<ion-view title="HuskyBadges">
+  <ion-content has-header="true" has-footer="true" padding="true">
+    <ion-list>
+      <div class="item item-divider">Earned Badges</div>
+      <ion-item ng-repeat="achievement in earned" class="item-thumbnail-left">
+        <img ng-src="{{achievement.image}}">
+        <div class="badge-name">{{achievement.name}}</div>
+        <span class="badge-description">{{achievement.earnedDescription}}</span>
+      </ion-item>
+      <div class="item item-divider">Unearned Badges</div>
+      <ion-item ng-repeat="achievement in unearned" class="item-thumbnail-left">
+        <img ng-src="{{achievement.image}}" class="grayscale">
+        <div class="badge-name">{{achievement.name}}</div>
+        <span class="badge-description">{{achievement.unearnedDescription}}</span>
+      </ion-item>
+    </ion-list> 
+</ion-view>

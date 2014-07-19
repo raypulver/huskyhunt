@@ -1,0 +1,20 @@
+<ion-view title="UCONN">
+  <ion-content has-header="true" has-footer="true" padding="false">
+    <img id="huskyhunt-logo" src="images/banner/4.png"></img>
+    <div class="padding">
+      <h1>Welcome back {{netid}}</h1>
+      <p></p>
+      <h2>Score: {{score}}</h2>
+      <p></p>
+      <h2> Badges: {{badges.length}}</h2>
+      <button class="button button-positive button-full icon-right ion-chevron-right" ng-click="goToBadges()">View Badges</button>
+    </div>
+  </ion-content>
+  <title>UCONN - HuskyHunt</title>
+  <style type="text/css">
+    .title {
+      font-family: 'uconn';
+      font-size: 20px !important;
+    }
+  </style>
+</ion-view>
