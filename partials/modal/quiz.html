@@ -3,8 +3,13 @@
   </ion-header-bar>
   <ion-content has-header="true" padding="true">
   <div ng-bind-html="module.questions[selectedQuestion].body"></div>
-  <div class="list">
-  <ion-radio ng-repeat="answer in module.questions[selectedQuestion].answers" ng-value="answer.id" ng-model="$parent.choice">{{answer.value | strip}}</ion-radio>
+  <div class="list" ng-if="module.questions[selectedQuestion].answers.length > 1">
+    <ion-radio ng-repeat="answer in module.questions[selectedQuestion].answers" ng-value="answer.id" ng-model="$parent.choice">{{answer.value | strip}}</ion-radio>
+  </div>
+  <div ng-if="module.questions[selectedQuestion].answers.length == 1">
+    <label class="item item-input">
+      <input type="text" placeholder="Answer" ng-model="$parent.choice">
+    </label>
   </div>
   <button id="submit" class="button button-clear" ng-click="attemptQuestion(choice)">Submit</button>
   <button id="yo" class="button button-clear" ng-click="hideQuiz()">Close</button>

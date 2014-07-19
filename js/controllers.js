@@ -74,7 +74,6 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   }); */
   $scope.selectedQuestion = 0;
   $scope.maxQuestion = $scope.module.question
-  $scope.choice = 0;
   $ionicModal.fromTemplateUrl('partials/modal/quiz.html', {
     scope: $scope,
     animation: 'slide-in-up'
