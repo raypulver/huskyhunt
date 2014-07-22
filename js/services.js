@@ -44,22 +44,6 @@ angular.module('huskyhunt.services', [])
     }
   }
 })
-.factory('Player', function () {
-  var badges = [0, 2, 3];
-  var points = 250;
-  var netID = 'rip12002';
-  return {
-    getBadges: function () {
-      return badges;
-    },
-    getScore: function () {
-      return points;
-    },
-    getNetID: function () {
-      return netID;
-    }
-  }
-})  
 .factory('Answer', function () {
   var answers = [
     3,

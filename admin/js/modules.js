@@ -1,6 +1,12 @@
 var BASE_URL = 'http://ecdesign.co'
 var NOP = function() {}
-
+var strip = function (text) {
+  var step1 = String(text).replace(/<[^>]+>/gm, '');
+  var step2 = step1.replace(/&nbsp;/g, ' ');
+  var step3 = step2.replace(/\&mdash;/g, '-');
+  var step4 = step3.replace(/\&ndash;/g, '-');
+  return step4.replace(/&rsquo;/g, '\'');
+}
 var MODULE_QUESTION_ROW =   '<tr question_id=%d>' +
                             '   <td class="question-body">%s</td>' +
                             '   <td class="icon-cell">' +
@@ -20,6 +26,9 @@ var QUESTION_ANSWER_ROW =   '<tr answer_id=%d>' +
                             '   <td class="icon-cell">' +
                             '       <input type="checkbox" name="correct[]" value="%d" %s>' +
                             '   </td>' +
+                            '   <td class="icon-cell">' +
+				'       <a href="javascript:window.open(\'qr.php?text=%s\', \'QR Code\', \'width=200,height=200\');">' +
+                            '              <img src="../images/qrcode28.png"></a></td>' +
                             '   <td class="icon-cell">' +
                             '       <a href="#edit_answer" onclick="HuskyHuntAnswerModal.show(this)">' +
                             '           <img class="img24x24" src="%s/images/edit_button.png" alt="edit" />' +
@@ -330,7 +339,7 @@ HuskyHuntQuestion = {
             
             answer_id = parseInt(answer.answer_id, 10); 
             
-            var el  = $(sprintf(QUESTION_ANSWER_ROW, answer_id, answer.body, answer_id, '', BASE_URL, BASE_URL));  
+            var el  = $(sprintf(QUESTION_ANSWER_ROW, answer_id, answer.body, answer_id, '', strip(answer.body), BASE_URL, BASE_URL));  
     
             $('#ajax-question-answers').append(el);
 
@@ -446,7 +455,7 @@ HuskyHuntQuestionModal = {
 
         var question_id     = $('#question-modal input[name=question_id]').val();
         var body            = $('#question-modal textarea[name=question_body]').val();
-
+        var feedback = $('#question-modal input[name=feedback_body]').val();
         var correct = new Array();
 
         $.each($('input[name="correct[]"]:checked'), function() {
@@ -456,6 +465,7 @@ HuskyHuntQuestionModal = {
         var question = {
             question_id: question_id,
             body: body,
+            feedback: feedback,
             correct: correct
         };
 
@@ -497,14 +507,14 @@ HuskyHuntQuestionModal = {
 
             $('#ajax-question-id').val(question.question_id);
             CKEDITOR.instances['ajax-question-body'].setData(question.body);
-
+            $('#ajax-feedback-body').val(question.feedback);
             for (index in question.answers) {
 
                 var answer  = question.answers[index];
                 var answer_id = parseInt(answer.answer_id, 10); 
                 //var correct = (question.correct.indexOf(answer.answer_id) > -1) ;
                 var checked = (question.correct.indexOf(answer.answer_id) > -1) ? "checked" : "";
-                var el      = $(sprintf(QUESTION_ANSWER_ROW, answer_id, answer.body, answer_id, checked, BASE_URL, BASE_URL));  
+                var el      = $(sprintf(QUESTION_ANSWER_ROW, answer_id, answer.body, answer_id, checked, strip(answer.body), BASE_URL, BASE_URL));  
 
                 $('#ajax-question-answers').append(el);
             }

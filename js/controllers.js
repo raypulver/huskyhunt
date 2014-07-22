@@ -3,7 +3,8 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     var step1 = String(text).replace(/<[^>]+>/gm, '');
     var step2 = step1.replace(/&nbsp;/g, ' ');
     var step3 = step2.replace(/\&mdash;/g, '-');
-    return step3.replace(/&rsquo;/g, '\''); 
+    var step4 = step3.replace(/\&ndash;/g, '-');
+    return step4.replace(/&rsquo;/g, '\''); 
   }
 })
 .controller('masterCtrl', function ($scope, $ionicLoading) {
@@ -20,19 +21,18 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     }
   });
 })
-.controller('statusCtrl', function($scope, Player, Badges, $state) {
-  $scope.netid = Player.getNetID();
-  $scope.score = Player.getScore();
-  $scope.badges = Player.getBadges();
+.controller('statusCtrl', function($scope, player, Badges, $state) {
+  var user = player.data;
+  $scope.netid = user.netid;
+  $scope.score = user.score;
+  $scope.badges = user.badges;
   $scope.goToBadges = function () {
     $state.go('game.badges');
   }
 })
 
-.controller('badgesCtrl', function ($scope, Player, Badges) {
-  var badges = Player.getBadges();
-  $scope.earned = Badges.getByArray(badges);
-  $scope.unearned = Badges.getByArrayInverse(badges);
+.controller('badgesCtrl', function ($scope, badges) {
+  $scope.badges = badges.data;
 })
 
 .controller('modulesCtrl', function($scope, modules) {
@@ -43,42 +43,19 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   var wasLastQuestion = function (index) {
     return index == $scope.module.questions.length - 1;
   }
-/*
-  $ionicModal.fromTemplateUrl('partials/result-modal.html', {
-    scope: $scope,
-    animation: 'slide-in-up',
-    hardwareBackButtonClose: true,
-    backdropClickToClose: true
-  }).then(function (modal) {
-    $scope.modal = modal;
-  });
-  $ionicModal.fromTemplateUrl('partials/correct-answer-modal.html', {
-    scope: $scope,
-    animation: 'slide-in-up',
-    hardwareBackButtonClose: true,
-    backdropClickToClose: true
-  }).then(function (modal) {
-    $scope.correctAnswerModal = modal;
-  });
-  $ionicModal.fromTemplateUrl('partials/wrong-answer-modal.html', {
-    scope: $scope,
-    animation: 'slide-in-up',
-    hardwareBackButtonClose: true,
-    backdropClickToClose: true
-  }).then(function (modal) {
-    $scope.wrongAnswerModal = modal;
-  });
-  $scope.modal = null; 
-  $scope.$on('$destroy', function () {
-    $scope.modal.remove();
-  }); */
   $scope.selectedQuestion = 0;
-  $scope.maxQuestion = $scope.module.question
+  $scope.choices = {};
   $ionicModal.fromTemplateUrl('partials/modal/quiz.html', {
     scope: $scope,
     animation: 'slide-in-up'
   }).then(function (modal) {
     $scope.quizModal = modal;
+  });
+  $ionicModal.fromTemplateUrl('partials/modal/share.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function (modal) {
+    $scope.shareModal = modal;
   });
 //  $scope.$on('$destroy', function () {
 //    $scope.quizModal.remove();
@@ -89,23 +66,41 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   $scope.hideQuiz = function () {
     this.quizModal.hide();
   }
+  $scope.done = function () {
+    this.quizModal.remove()
+    this.shareModal.remove();
+    window.history.back();
+  }
   $scope.attemptQuestion = function (answer) {
     Quiz.attempt($scope.module.questions[$scope.selectedQuestion].id, answer).then(function (res) {
+      $scope.quizModal.hide();
+      var showShare = false;
       if (res.data.winner) {
-        $scope.quizModal.hide();
         $timeout(function () {
-          if (wasLastQuestion($scope.selectedQuestion)) {
-            $ionicPopup.alert({
-              title: 'Module Complete!',
-              templateUrl: '<h2> Share! </h2><h4> Share what you have learned on the social network of your choice.</h4><h4> If you just scanned a QR code you have already earned the points for this module! </h4><hr><div class="row" style="text-align: center;"><blockquote>{{module.insight}}</blockquote><div class="col-md-5 col-md-offset-1"><img src="images/social_twitter_square.png"></div><div class="col-md-5 col-md-offset-1"><img src="images/social_facebook_square.png"></div></div><small>* Sharing is <em>not</em> required to be eligible for the grand prize.</small>'
-            }).then(function (res) {
-              window.history.back();
-            });
+          $scope.module.questions[$scope.selectedQuestion].answers = [];
+        }, 100);
+        $timeout(function () {
+          if (!wasLastQuestion($scope.selectedQuestion)) {
+            $scope.selectedQuestion++;
           } else {
-          $scope.selectedQuestion++;
-          $scope.quizModal.show()
+            showShare = true;
+          }
+        }, 200);
+        $timeout(function () {
+          if (showShare) {
+            $scope.shareModal.show();
+          } else {
+            $scope.quizModal.show();
           }
         }, 500);
+      } else {
+        $timeout(function () {
+          $ionicPopup.alert({
+            title: res.data.feedback
+          }).then(function (res) {
+            $scope.quizModal.show();
+          });
+        }, 200);
       }
     });
   }

@@ -1,10 +1,10 @@
 @font-face {
-  font-family: 'uconn';
-  src: url('../fonts/uconn.eot');
-  src: url('../fonts/uconn.svg#uconn') format('svg'),
-    url('../fonts/uconn.eot#iefix'),
-    url('../fonts/uconn.woff') format('woff'),
-    url('../fonts/uconn.ttf') format('truetype');
+  font-family: "uconn";
+  src: url("../fonts/uconn.eot");
+  src: url("../fonts/uconn.eot#iefix") format("embedded-opentype"),
+       url("../fonts/uconn.ttf") format("truetype"),
+       url("../fonts/uconn.woff") format("woff"),
+       url("../fonts/uconn.svg#uconn") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -14,6 +14,19 @@ img#huskyhunt-logo {
   text-align: center;
   margin-left: auto;
   margin-right: auto
+}
+div#background {
+  position: fixed;
+  left: 0em;
+  top: 0em;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+}
+img.uconn-wordmark {
+  max-height: 100%;
+  height: 40px;
+  padding: 6px 0px 0px 0px;
 }
 img.badge {
 /*  max-width: 30%;*/

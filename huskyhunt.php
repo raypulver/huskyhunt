@@ -15,8 +15,6 @@ define('NETID', $NETID);
 
 class HuskyHuntLog {
 
-    
-
 }
 
 
@@ -544,6 +542,7 @@ class HuskyHuntQuestion {
     private $question_id        = NULL;
     public  $body       = ''; 
     public  $answers    = array();
+    public $feedback	= '';
     private $answer_ids = array();
     private $correct    = array();
 
@@ -552,7 +551,39 @@ class HuskyHuntQuestion {
         if (!is_null($question_id))
             $this->load($question_id);
     }
-
+    public function is_last() { 
+      $db     = HuskyHuntDatabase::shared_database();
+      $SQL1    = 'SELECT module_id FROM map_mq WHERE question_id = :question_id;';
+      $SQL2 = 'SELECT MAX(question_id) AS max_q FROM map_mq WHERE module_id = :module_id;';
+      $questions = array();
+      if ($stmt = $db->prepare($SQL1)) {
+        $stmt->bindParam(':question_id', $this->question_id);
+        $stmt->execute();
+        if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $module = $result['module_id'];
+        }
+      }
+      if ($stmt = $db->prepare($SQL2)) {
+        $stmt->bindParam(':module_id', $module);
+        $stmt->execute();
+        if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $last_question = $result['max_q'];
+        }
+      }
+      return $last_question == $this->question_id;
+    }
+    public function get_module_id() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT module_id FROM map_mq WHERE question_id = :question_id;';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':question_id', $this->question_id);
+        $stmt->execute();
+        if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $module = $result['module_id'];
+        }
+      }
+      return $module;
+    }
     public function count_answers() {
         return count($this->answers);
     }
@@ -781,6 +812,7 @@ class HuskyHuntQuestion {
             if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
               
                 $this->body = $result['body'];
+                $this->feedback = $result['feedback'];
                 $this->question_id  = $result['question_id'];
                 $this->load_answers();
                 $this->load_answer_key();
@@ -825,18 +857,17 @@ class HuskyHuntQuestion {
         
         $db = HuskyHuntDatabase::shared_database();
 
-        $INSERT_SQL = 'INSERT INTO questions (body) VALUES (:body)';
-        $UPDATE_SQL = 'UPDATE questions SET body=:body WHERE question_id=:question_id';
+        $INSERT_SQL = 'INSERT INTO questions (body, feedback) VALUES (:body, :feedback)';
+        $UPDATE_SQL = 'UPDATE questions SET body=:body, feedback=:feedback WHERE question_id=:question_id';
         $SQL        = (is_null($this->question_id)) ? $INSERT_SQL : $UPDATE_SQL; 
         
         $result     = false;
 
         if ($stmt = $db->prepare($SQL)) {
-
             if ($SQL == $UPDATE_SQL)
                 $stmt->bindValue(':question_id', $this->question_id, PDO::PARAM_INT);
             $stmt->bindValue(':body', $this->body, PDO::PARAM_STR);
-          
+            $stmt->bindValue(':feedback', $this->feedback, PDO::PARAM_STR);
             $db->beginTransaction();
             $stmt->execute(); 
             
@@ -882,11 +913,25 @@ class HuskyHuntModule {
             $this->load($module_id);
 
     }
-
-    function get_id() {
-        return $this->module_id;
+    function get_question_ids() {
+      return $this->question_ids;
     }
-
+    function get_id() {
+      return $this->module_id;
+    }
+    function is_scavenger_module() {
+      if (count($this->questions) == 1) {
+        foreach ($this->questions as $question) {
+          if (count($question->answers) == 1) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else {
+        return false;
+      }
+    }
     function get_question($question_id) {
     
         $question = NULL;
@@ -1138,7 +1183,32 @@ class HuskyHuntGame {
     function save() {}
     
 }
-
+class HuskyHuntBadge {
+  public $badge_id = NULL;
+  public $name = NULL;
+  public $image = NULL;
+  public $unearned_desc = NULL;
+  public $earned_desc = NULL;
+  
+  function __construct($badge_id = NULL) {
+    if (!is_null($badge_id)) {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT * FROM badges WHERE badge_id = :badge_id';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindValue(':badge_id', $badge_id);
+        $result = $stmt->execute();
+        if ($result) {
+          $row = $stmt->fetch(PDO::FETCH_ASSOC);
+          $this->badge_id = $badge_id;
+          $this->name = $row['name'];
+          $this->image = $row['image'];
+          $this->unearned_desc = $row['unearned_desc'];
+          $this->earned_desc = $row['earned_desc'];
+        }
+      }
+    }
+  }
+}
 class HuskyHuntUser {
 
     public $user_id     = NULL;
@@ -1146,6 +1216,7 @@ class HuskyHuntUser {
     public $role    = 0;
     public $score   = NULL;
     public $contact = NULL;
+    public $badges = array();
 
     function __construct($netid = NULL) {
 
@@ -1177,7 +1248,18 @@ class HuskyHuntUser {
         return $module_id;
     }
 
-
+    function badges_json() {
+      $badges = array();
+      foreach ($this->badges as $badge) {
+        $badges[] = array(
+          'name' => $badge->name,
+          'image' => $badge->image,
+          'unearned_desc' => $badge->unearned_desc,
+          'earned_desc' => $badge->earned_desc
+        );
+      }
+      echo json_encode($badges);
+    }
 
     function postponed_quiz_modules() {
         
@@ -1464,8 +1546,106 @@ class HuskyHuntUser {
             } else {
                 #TODO handle sql erros
             }
-
+          $this->load_badges();
         }
+    }
+    function get_rank() {
+        $db = HuskyHuntDatabase::shared_database();
+        $SQL = 'SELECT netid, real_points, score FROM (SELECT user_id, SUM(((points * complete) + (social_points * shared))) as real_points  FROM modules LEFT JOIN grades USING (module_id) GROUP BY user_id ORDER BY points DESC) AS calculated LEFT JOIN users USING (user_id) ORDER BY real_points DESC';
+        $rank = 0;
+        $previous_score = PHP_INT_MAX;
+        $rows = array();
+        if ($stmt = $db->prepare($SQL)) {
+
+            $result = $stmt->execute();
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                $netid = $row['netid'];
+                $score = $row['real_points'];
+                if (!is_null($netid) && !is_null($score)) {
+                  if ($score < $previous_score)
+                    $rank ++;
+                  if ($row['netid'] == $this->netid)
+                    return $rank;
+                  $previous_score = $score;
+                }
+            }
+        }
+    }
+      
+    function scavenger_modules_completed() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT scavenger_hunt FROM completed WHERE user_id = :user_id';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        $stmt->execute();
+        if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          return $result['scavenger_hunt'];
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    function other_modules_completed() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT other FROM completed WHERE user_id = :user_id';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        $stmt->execute();
+        if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          return $result['other'];
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    function insert_badge_by_id($badge_id) {
+
+      $add_badge = true;
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT * FROM map_bu WHERE user_id = :user_id;';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        $stmt->execute();
+        while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          if ($result['badge_id'] == $badge_id) {
+            $add_badge = false;
+          }
+        }
+      }
+
+      if ($add_badge) {
+        $SQL = 'INSERT INTO map_bu (user_id, badge_id, time_awarded) VALUES (:user_id, :badge_id, NOW());';
+        if ($stmt = $db->prepare($SQL)) {
+          $stmt->bindParam(':user_id', $this->user_id);
+          $stmt->bindParam(':badge_id', $badge_id);
+          $stmt->execute();
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    function load_badges() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT * FROM map_bu WHERE user_id = :user_id;';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        $stmt->execute();
+        while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $this->badges[] = new HuskyHuntBadge($result['badge_id']);
+        }
+      }
     }
 
     function save() {

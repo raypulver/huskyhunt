@@ -1,4 +1,4 @@
-angular.module('huskyhunt', ['ionic', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.modules', 'huskyhunt.service.quiz'])
+angular.module('huskyhunt', ['ionic', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.modules', 'huskyhunt.service.player', 'huskyhunt.service.quiz'])
 
 .config(function($locationProvider, $stateProvider, $urlRouterProvider) {
   $stateProvider
@@ -20,6 +20,11 @@ angular.module('huskyhunt', ['ionic', 'ngSanitize', 'huskyhunt.controllers', 'hu
           templateUrl: 'partials/status.html',
           controller: 'statusCtrl'
         }
+      },
+      resolve: {
+        player: function (Player) {
+          return Player.getStatus();
+        }
       }
     })
 
@@ -29,6 +34,11 @@ angular.module('huskyhunt', ['ionic', 'ngSanitize', 'huskyhunt.controllers', 'hu
         'game-status': {
           templateUrl: 'partials/badges.html',
           controller: 'badgesCtrl'
+        }
+      },
+      resolve: {
+        badges: function (Badges) {
+          return Badges.get();
         }
       }
     })

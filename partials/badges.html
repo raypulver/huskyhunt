@@ -2,16 +2,10 @@
   <ion-content has-header="true" has-footer="true" padding="true">
     <ion-list>
       <div class="item item-divider">Earned Badges</div>
-      <ion-item ng-repeat="achievement in earned" class="item-thumbnail-left">
-        <img ng-src="{{achievement.image}}">
-        <div class="badge-name">{{achievement.name}}</div>
-        <span class="badge-description">{{achievement.earnedDescription}}</span>
-      </ion-item>
-      <div class="item item-divider">Unearned Badges</div>
-      <ion-item ng-repeat="achievement in unearned" class="item-thumbnail-left">
-        <img ng-src="{{achievement.image}}" class="grayscale">
-        <div class="badge-name">{{achievement.name}}</div>
-        <span class="badge-description">{{achievement.unearnedDescription}}</span>
+      <ion-item ng-repeat="badge in badges" class="item-thumbnail-left">
+        <img ng-src="images/badges/{{badge.image}}">
+        <div class="badge-name">{{badge.name}}</div>
+        <span class="badge-description">{{badge.earned_desc}}</span>
       </ion-item>
     </ion-list> 
 </ion-view>

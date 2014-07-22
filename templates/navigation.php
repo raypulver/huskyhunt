@@ -10,7 +10,7 @@
             <ul class="pull-right nav navbar-nav">
                 <?php if (1) { /* ?> <li><a href="<?=BASE_URL?>/admin">Admin</a></li> <?php */ } ?>
                 <li class="link"><a href="scores.php">Scores</a></li>
-                <li class="link"><a href="#/stats">Player Stats</a></li>
+                <li class="link"><a href="stats.php">Statistics</a></li>
                 <li class="link"><a href="list_modules.php">Module Admin</a></li>
             </ul>
 

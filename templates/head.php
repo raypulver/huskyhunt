@@ -25,3 +25,4 @@
 <script src="js/service.scores.js"></script>
 <script src="js/service.modules.js"></script>
 <script src="js/service.quiz.js"></script>
+<script src="js/service.player.js"></script>

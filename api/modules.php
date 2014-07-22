@@ -20,6 +20,8 @@
     $info = array(
       'id' => $module->get_id(),
       'title' => $module->title,
+      'points' => $module->points,
+      'social_points' => $module->social_points,
       'body' => $module->body,
       'insight' => $module->insight,
       'questions' => array()
@@ -28,7 +30,8 @@
       $qdata = array(
         'id' => $question->get_id(),
         'body' => $question->body,
-        'answers' => array() 
+        'answers' => array(),
+        'multiple_answer' => count($question->get_correct()) > 1
       );
       foreach ($question->answers as $answer) {
         $qdata['answers'][] = array('id' => $answer->get_id(), 'value' => $answer->value);

@@ -8,6 +8,8 @@ $response = NULL;
 $question_id = post_value('question_id');
 
 $question = new HuskyHuntQuestion($question_id);
-$response = $question->json_encode(); 
+$response = json_decode($question->json_encode()); 
+$response->feedback = $question->feedback;
+$response = json_encode($response);
 
 echo $response;

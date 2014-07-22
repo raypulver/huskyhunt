@@ -224,7 +224,11 @@
                             </div>
 
                             <hr />
-                            
+                            <div class="form-group">
+                                <label for="feedback_body">Feedback: (shown on wrong answer)</label><br>
+                                <input type="text" style="width: 100%" name="feedback_body" id="ajax-feedback-body">
+                            </div>
+                            <hr>
                             <h4 class="modal-title">Answers:</h4>
                             <div class="row"> 
                                 <div class="col-md-12">
@@ -233,6 +237,7 @@
                                     <tr>
                                         <th>Answer</th>
                                         <th style="width: 50px;">Correct</th>
+                                        <th style="width: 30px;">QR</th>
                                         <th class="icon-cell"></th>
                                         <th class="icon-cell">
                                             <a href="#new_answer" onclick="HuskyHuntQuestion.new_answer(this)">
