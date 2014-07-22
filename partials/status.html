@@ -1,13 +1,27 @@
-<ion-view title='<img class="uconn-wordmark" src="images/uconn-wordmark.png">'>
+<ion-image-title-view title='<img class="uconn-wordmark" src="images/uconn-wordmark.png">' real-title="HuskyHunt">
   <ion-content has-header="true" has-footer="true" padding="false">
-    <img id="huskyhunt-logo" src="images/banner/4.png"></img>
+    <img id="huskyhunt-logo" src="images/banner/banner.png"></img>
     <div class="padding">
-      <h1>Welcome back {{netid}}</h1>
-      <p></p>
-      <h2>Score: {{score}}</h2>
-      <p></p>
-      <h2> Badges: {{badges}}</h2>
-      <button class="button button-positive button-full icon-right ion-chevron-right" ng-click="goToBadges()">View Badges</button>
+      <div class="card" style="text-align:center">
+        <div class="item item-divider">
+          Welcome back {{netid}}
+        </div>
+        <div class="item item-text-wrap">
+          <div class="row">
+            <div class="col col-33" style="font-size:14px;">Score:</div>
+            <div class="col col-66">{{score}}</div>
+          </div>
+        </div>
+        <div class="item item-text-wrap">
+          <div class="row">
+            <div class="col col-33" style="font-size: 14px;">Badges:</div>
+            <div class="col col-66">{{badges}}</div>
+          </div>
+        </div>
+        <div ng-click="goToBadges()" class="item item-divider item-icon-right badge-button">
+          View Badges <i class="icon ion-chevron-right" style="color:#ccc; font-size:16px"></i>
+        </div>
+      </div>
     </div>
   </ion-content>
   <title>UCONN - HuskyHunt</title>
@@ -17,4 +31,4 @@
       font-size: 20px !important;
     }
   </style>
-</ion-view>
+</ion-image-title-view>

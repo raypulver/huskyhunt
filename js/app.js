@@ -1,4 +1,4 @@
-angular.module('huskyhunt', ['ionic', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.modules', 'huskyhunt.service.player', 'huskyhunt.service.quiz'])
+angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.modules', 'huskyhunt.service.player', 'huskyhunt.service.quiz'])
 
 .config(function($locationProvider, $stateProvider, $urlRouterProvider) {
   $stateProvider

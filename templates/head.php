@@ -20,6 +20,7 @@
 <!-- <link href="/css/huskyhunt.css" rel="stylesheet"> -->
 <script src="js/app.js"></script>
 <script src="js/controllers.js"></script>
+<script src="js/directive.ionimagetitleview.js"></script>
 <script src="js/services.js"></script>
 <script src="js/service.badges.js"></script>
 <script src="js/service.scores.js"></script>
