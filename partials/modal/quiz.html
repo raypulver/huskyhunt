@@ -2,20 +2,27 @@
   <ion-header-bar title="Question {{selectedQuestion + 1}}">
   </ion-header-bar>
   <ion-content has-header="true" padding="true">
-  <div ng-bind-html="module.questions[selectedQuestion].body"></div>
-  <div class="list" ng-if="module.questions[selectedQuestion].answers.length > 1 && !module.questions[selectedQuestion].multiple_answer">
-    <ion-radio ng-repeat="answer in module.questions[selectedQuestion].answers" ng-value="answer.id" ng-model="$parent.$parent.choice">{{answer.value | strip}}</ion-radio>
+  <div ng-bind-html="level.questions[selectedQuestion].body"></div>
+  <div class="list" ng-if="level.questions[selectedQuestion].answers.length > 1 && !level.questions[selectedQuestion].multiple_answer">
+    <ion-radio ng-repeat="answer in level.questions[selectedQuestion].answers" ng-value="answer.id" ng-model="$parent.$parent.choice">{{answer.value | strip}}</ion-radio>
   </div>
-  <div ng-if="module.questions[selectedQuestion].answers.length == 1">
+  <div ng-if="level.questions[selectedQuestion].answers.length == 1">
     <label class="item item-input">
       <input type="text" placeholder="Answer" ng-model="$parent.choice">
     </label>
   </div>
-  <div class="list" ng-if="module.questions[selectedQuestion].multiple_answer">
-    <ion-checkbox ng-repeat="answer in module.questions[selectedQuestion].answers" ng-model="choices[answer.id]">{{answer.value | strip}}</ion-checkbox>
+  <div class="list" ng-if="level.questions[selectedQuestion].multiple_answer">
+    <ion-checkbox ng-repeat="answer in level.questions[selectedQuestion].answers" ng-model="choices[answer.id]">{{answer.value | strip}}</ion-checkbox>
   </div>
-  <button id="submit" class="button button-clear" ng-if="!module.questions[selectedQuestion].multiple_answer" ng-click="attemptQuestion(choice)">Submit</button>
-  <button id="submitmulti" class="button button-clear" ng-if="module.questions[selectedQuestion].multiple_answer" ng-click="attemptQuestion(choices)">Submit</button>
+  <div class="card">
+    <div style="font-size: 11px" class="item item-divider">
+      Sponsored by {{level.vendor}}
+    </div>
+    <div ng-bind-html="level.questions[selectedQuestion].ad_text" class="item item-text-wrap">
+    </div>
+  </div>
+  <button id="submit" class="button button-clear" ng-if="!level.questions[selectedQuestion].multiple_answer" ng-click="attemptQuestion(choice)">Submit</button>
+  <button id="submitmulti" class="button button-clear" ng-if="level.questions[selectedQuestion].multiple_answer" ng-click="attemptQuestion(choices)">Submit</button>
   <button id="yo" class="button button-clear" ng-click="hideQuiz()">Close</button>
   </ion-content>
 </div>

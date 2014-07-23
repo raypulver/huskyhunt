@@ -1,4 +1,4 @@
-angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.modules', 'huskyhunt.service.player', 'huskyhunt.service.quiz'])
+angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.levels', 'huskyhunt.service.player', 'huskyhunt.service.quiz'])
 
 .config(function($locationProvider, $stateProvider, $urlRouterProvider) {
   $stateProvider
@@ -43,38 +43,38 @@ angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'hus
       }
     })
 
-    .state('game.modules', {
-      url: '/modules',
+    .state('game.levels', {
+      url: '/levels',
       views: {
-        'module-board': {
-          templateUrl: 'partials/modules.html',
-          controller: 'modulesCtrl'
+        'level-board': {
+          templateUrl: 'partials/levels.html',
+          controller: 'levelsCtrl'
         }
       },
       resolve: {
-        modules: function (Modules) {
-          return Modules.get();
+        levels: function (Levels) {
+          return Levels.get();
         }
       }
     })
-    .state('game.play-module', {
-      url: '/module/:moduleId',
+    .state('game.play-level', {
+      url: '/level/:levelId',
       views: {
-        'module-board': {
-          templateUrl: 'partials/module-main.html',
-          controller: 'mainModuleCtrl'
+        'level-board': {
+          templateUrl: 'partials/level-main.html',
+          controller: 'mainLevelCtrl'
         }
       },
       resolve: {
-        module: function (Modules, $stateParams) {
-          return Modules.get($stateParams.moduleId);
+        level: function (Levels, $stateParams) {
+          return Levels.get($stateParams.levelId);
         }
       }
     })
-    .state('game.play-module.quiz', {
+    .state('game.play-level.quiz', {
       url: '/quiz',
       views: {
-        'module-board': {
+        'level-board': {
           templateUrl: 'partials/quiz.html',
           controller: 'quizCtrl'
         }

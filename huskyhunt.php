@@ -545,6 +545,7 @@ class HuskyHuntQuestion {
     public $feedback	= '';
     private $answer_ids = array();
     private $correct    = array();
+    public $ad_text = '';
 
     public function __construct($question_id = NULL) {
         
@@ -814,6 +815,7 @@ class HuskyHuntQuestion {
                 $this->body = $result['body'];
                 $this->feedback = $result['feedback'];
                 $this->question_id  = $result['question_id'];
+                $this->ad_text = $result['ad_text'];
                 $this->load_answers();
                 $this->load_answer_key();
             }
@@ -896,6 +898,7 @@ class HuskyHuntModule {
     public  $title          = '';
     public  $body           = '';
     public  $insight        = '';
+    public  $vendor         = '';
     public  $points         = 0;
     public  $social_points  = 0;
     #public  $game_id        = 0;
@@ -1059,7 +1062,7 @@ class HuskyHuntModule {
     function load($module_id) {
     
         $db     = HuskyHuntDatabase::shared_database();
-        $SQL    = 'SELECT module_id, title, body, insight, points, social_points, postponable, bonus, knowledge_base FROM modules WHERE module_id=:module_id';
+        $SQL    = 'SELECT module_id, title, body, insight, points, social_points, postponable, bonus, knowledge_base, vendor FROM modules WHERE module_id=:module_id';
 
         if (is_numeric($module_id) && ($stmt = $db->prepare($SQL))) {
 
@@ -1080,6 +1083,7 @@ class HuskyHuntModule {
                 $this->social_points      = $result['social_points'];
                 $this->postponable  = $result['postponable'];
                 $this->bonus        = $result['bonus'];
+                $this->vendor = $result['vendor'];
                 $this->knowledge_base        = $result['knowledge_base'];
                 $this->load_questions();
                 $this->load_timeline();

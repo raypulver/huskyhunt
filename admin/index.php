@@ -11,7 +11,7 @@
 
         <div class="container">
             
-            <button onclick="window.location='emails.php'" class="btn btn-lg btn-primary" type="button">Generate Player Email List</button>
+<!--            <button onclick="window.location='emails.php'" class="btn btn-lg btn-primary" type="button">Generate Player Email List</button> -->
 
         </div>
     </body>

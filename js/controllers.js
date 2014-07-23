@@ -35,13 +35,13 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   $scope.badges = badges.data;
 })
 
-.controller('modulesCtrl', function($scope, modules) {
-  $scope.modules = modules.data;
+.controller('levelsCtrl', function($scope, levels) {
+  $scope.levels = levels.data;
 })
-.controller('mainModuleCtrl', function($scope, $stateParams, $ionicModal, $timeout, $ionicPopup, module, Quiz) {
-  $scope.module = module.data;
+.controller('mainLevelCtrl', function($scope, $stateParams, $ionicModal, $timeout, $ionicPopup, level, Quiz) {
+  $scope.level = level.data;
   var wasLastQuestion = function (index) {
-    return index == $scope.module.questions.length - 1;
+    return index == $scope.level.questions.length - 1;
   }
   $scope.selectedQuestion = 0;
   $scope.choices = {};
@@ -60,7 +60,7 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
 //  $scope.$on('$destroy', function () {
 //    $scope.quizModal.remove();
 //  });
-  $scope.playModule = function () {
+  $scope.playLevel = function () {
     this.quizModal.show();
   }
   $scope.hideQuiz = function () {
@@ -72,12 +72,12 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     window.history.back();
   }
   $scope.attemptQuestion = function (answer) {
-    Quiz.attempt($scope.module.questions[$scope.selectedQuestion].id, answer).then(function (res) {
+    Quiz.attempt($scope.level.questions[$scope.selectedQuestion].id, answer).then(function (res) {
       $scope.quizModal.hide();
       var showShare = false;
       if (res.data.winner) {
         $timeout(function () {
-          $scope.module.questions[$scope.selectedQuestion].answers = [];
+          $scope.level.questions[$scope.selectedQuestion].answers = [];
         }, 100);
         $timeout(function () {
           if (!wasLastQuestion($scope.selectedQuestion)) {
@@ -104,10 +104,10 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
       }
     });
   }
-}).controller('quizCtrl', function ($scope, module) {
+}).controller('quizCtrl', function ($scope, level) {
   $scope.submit = function () {
     var choice = $scope.choice + 1;
-    var result = Answer.attempt($stateParams.moduleId, choice)
+    var result = Answer.attempt($stateParams.levelId, choice)
     if (result < 0) {
       $ionicPopup.alert({
         title: 'Wrong! -10 points.'
@@ -119,7 +119,7 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     }
     console.log("$scope.choice = " + $scope.choice);
   }
-  $scope.module = module.data;
+  $scope.level = level.data;
 })
 .controller('scoresCtrl', function($scope, scores) {
     $scope.scores = scores.data;
