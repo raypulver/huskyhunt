@@ -12,6 +12,7 @@ define('MYSQL_DATABASE', 'huskyhunt');
 
 define('BASE_PATH', '/var/www');
 define('BASE_URL', 'http://ecdesign.co');
+define('LOG_PATH', '/var/log/apache2');
 
 include_once BASE_PATH . '/huskyhunt.php';
 include_once BASE_PATH . '/functions.php';

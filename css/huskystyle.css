@@ -62,9 +62,9 @@ div.badge-button {
   transition: background 1s;
 }
 div.badge-button:hover {
-  background: radial-gradient(60%, #36648B, #0D4F8B, #27408B);
-  background: -webkit-radial-gradient(60%, #36648B, #0D4F8B, #27408B);
-  background: -moz-radial-gradient(60%, #36648B, #0D4F8B, #27408B);
+  background: radial-gradient(60%, #36648B, #000066, #27408B);
+  background: -webkit-radial-gradient(60%, #36648B, #000066, #27408B);
+  background: -moz-radial-gradient(60%, #36648B, #000066, #27408B);
 }
 img.uconn-wordmark {
   max-height: 100%;
@@ -103,6 +103,53 @@ div.badge-name {
   font-weight: bold;
   color: #000040;
   margin-bottom: 3px;
+}
+#scoreboard {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 75px;
+  padding-right: 75px;
+}
+.desktop-wrap {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 75px;
+  padding-right: 75px;
+  border-left: 8px solid #000060;
+  border-right: 8px solid #000060;
+}
+#levelboard {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 75px;
+  padding-right: 75px;
+}
+#level-overview {
+  margin-left: auto;
+  margin-right: auto;
+}
+@media screen and (max-width: 750px) {
+  #scoreboard {
+    padding-left: 0px;
+    padding-right: 0px;
+    border-left: none;
+    border-right: none;
+  }
+  #levelboard {
+    padding-left: 0px;
+    padding-right: 0px;
+    border-left: none;
+    border-right: none;
+  }
+  .desktop-wrap {
+    padding-left: 0px;
+    padding-right: 0px;
+    border-left: none;
+    border-right: none;
+  }
 }
 span.badge-description {
   font-size: 0.9em;

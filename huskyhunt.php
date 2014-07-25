@@ -15,6 +15,74 @@ define('NETID', $NETID);
 
 class HuskyHuntLog {
 
+  private static $filepath = '/var/log/huskyhunt.log';
+  private static function strip($str) {
+    $str = preg_replace('/<[^>]+>/', '', $str);
+    $str = preg_replace('/&nbsp;/', ' ', $str);
+    $str = preg_replace('/&rsquo;/', '\'', $str);
+    $str = preg_replace('/\\n/', '', $str);
+    return $str;
+  }
+  private static function ordinal($num) {
+    $ends = array('th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th');
+    return (($num % 100) >= 11 && ($num % 100) <= 13) ? $num . 'th' : $num . $ends[$num % 10];
+  }
+  public static function log_last_attempt() {
+    $log_text = '';
+    $db = HuskyHuntDatabase::shared_database();
+    $SQL = 'SELECT * FROM attempts WHERE attempt_id = (SELECT MAX(attempt_id) FROM attempts)';
+    if ($stmt = $db->prepare($SQL)) {
+      $stmt->execute();
+      if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $attempt_id = $result['attempt_id'];
+        $user_id = $result['user_id'];
+        $question_id = $result['question_id'];
+        $answer = $result['answer'];
+        $time = $result['time'];
+        $correct = $result['correct'];
+        $user = HuskyHuntUser::from_id($user_id);
+        $question = new HuskyHuntQuestion($question_id);
+        $module = new HuskyHuntModule($question->get_module_id());
+        $log_text = "BEGIN ATTEMPT #" . $attempt_id . "\nUser: " . $user->netid . "\nTime: " . $time . "\nLevel: " . $question->get_module_id() .  "\nQuestion ID: " . $question->get_id() . " " . self::ordinal($question->index) . " of " . count($module->questions) . "\nQuestion " . $question->get_id() . ":\n\"" . self::strip($question->body) . "\"\nAnswered ";
+        if (preg_match('/[0-9]+\s[0-9]+.*/', $answer)) {
+          $answers = array();
+          $answer_ids = split('/\s/', $answer);
+          foreach ($answer_ids as $answer) {
+            $answers[] = new HuskyHuntAnswer(intval($answer));
+          }
+          $correct_count = 0;
+          foreach ($answers as $answer) {
+            if ($answer->is_correct()) {
+              $correct_count++;
+            }
+          }
+          $log_text .= $correct_count . "/" . count($answers) . " correct.\nAnswers:\n";
+          foreach ($answers as $answer) {
+            $log_text .= "\"" . self::strip($answer->value) . "\"\n";
+          }
+        } elseif (preg_match('/[0-9]+/', $answer)) {
+          $answer_object = new HuskyHuntAnswer(intval($answer));
+          $correct_count = 0;
+          if ($answer_object->is_correct())
+            $correct_count = 1;
+          $log_text .= $correct_count . "/" . "1 correct.\nAnswer:\n\"" . self::strip($answer_object->value) . "\"\n";
+        } else {
+          $correct_count = 0;
+          foreach ($question->get_correct() as $correct) {
+            $ans = new HuskyHuntAnswer($correct);
+            if ($answer == self::strip($ans->value)) {
+              $correct_count++;
+            }
+          }
+          $log_text .= $correct_count . "/" . "1 correct.\nAnswer: \"" . $answer . "\"\n";
+        }
+        $log_text .= "Rank is now " . $user->get_rank() . "\nEND ATTEMPT\n";
+        $fh = fopen(self::$filepath, 'a');
+        fwrite($fh, $log_text);
+        fclose($fh);
+      }
+    }
+  }
 }
 
 
@@ -496,6 +564,22 @@ class HuskyHuntAnswer {
 
     }
 
+    public function is_correct() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT answer_id FROM answer_key WHERE answer_id = :answer_id;';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':answer_id', $this->answer_id);
+        $stmt->execute();
+        if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
     public function save() {
         
         $db = HuskyHuntDatabase::shared_database();
@@ -543,6 +627,7 @@ class HuskyHuntQuestion {
     public  $body       = ''; 
     public  $answers    = array();
     public $feedback	= '';
+    public $index = NULL;
     private $answer_ids = array();
     private $correct    = array();
     public $ad_text = '';
@@ -818,10 +903,27 @@ class HuskyHuntQuestion {
                 $this->ad_text = $result['ad_text'];
                 $this->load_answers();
                 $this->load_answer_key();
+                $this->load_index();
             }
         }
     }
-
+    private function load_index() {
+      $index = 0;
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT * FROM map_mq WHERE module_id = (SELECT module_id FROM map_mq WHERE question_id = :question_id)';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':question_id', $this->question_id);
+        if ($result = $stmt->execute()) {
+          while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $index++;
+            if ($row['question_id'] == $this->question_id) {
+              $this->index = $index;
+              break;
+            }
+          }
+        }
+      }
+    }
     public function load_answer_key() {
 
         $db     = HuskyHuntDatabase::shared_database();
@@ -921,6 +1023,11 @@ class HuskyHuntModule {
     }
     function get_id() {
       return $this->module_id;
+    }
+    function current_points() {
+      $score = $this->points;
+      $seconds_passed = time() - $this->timeline[0]['start'];
+      return ceil((float) $score / 3 + ((float) 2 / 3) * $score * pow((float) 1 / 4, (float) $seconds_passed / 86400));
     }
     function is_scavenger_module() {
       if (count($this->questions) == 1) {
@@ -1228,7 +1335,24 @@ class HuskyHuntUser {
             $this->load($netid);
 
     }
-    
+
+    public static function from_id($user_id) {
+      
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT netid FROM users WHERE user_id = :user_id';
+      
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindValue(':user_id', $user_id);
+        if ($result = $stmt->execute()) {
+          $row = $stmt->fetch(PDO::FETCH_ASSOC);
+          $netid = $row['netid'];
+          return new HuskyHuntUser($netid);
+        }
+      }
+    }
+    public static function calculate_score($score, $seconds_passed) {
+      return ceil((float) $score / 3 + ((float) 2 / 3) * $score * pow((float) 1 / 4, (float) $seconds_passed / 86400));
+    }
     public function daily_module() {
 
         $db = HuskyHuntDatabase::shared_database();
@@ -1457,7 +1581,7 @@ class HuskyHuntUser {
         }
    
         if ($result && $complete) {
-            $this->score += $module->points;
+            $this->score += $module->current_points();
             $this->save();
         }
 

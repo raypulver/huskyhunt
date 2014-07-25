@@ -17,7 +17,9 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   });
   $scope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
     if (toState.resolve) {
-      $scope.loadingIndicator.hide();
+      if ($scope.loadingIndicator) {
+        $scope.loadingIndicator.hide();
+      }
     }
   });
 })

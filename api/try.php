@@ -101,4 +101,5 @@
       $USER->insert_badge_by_id(5);
     }
   }
+  HuskyHuntLog::log_last_attempt();
 ?>
