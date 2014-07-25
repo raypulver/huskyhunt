@@ -356,7 +356,7 @@ class HuskyHuntAdmin {
 
 class HuskyHunt {
 
-    public static $jwt_key = 'v4h89j';
+    public static $jwt_key = '';
     public function has_begun() {
         return true;
     }

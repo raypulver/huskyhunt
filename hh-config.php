@@ -5,7 +5,7 @@ date_default_timezone_set('America/New_York');
 define('HH_DEBUG', true);
 
 define('MYSQL_USER', 'huskyhunt');
-define('MYSQL_PASS', 'dmx2bnra');
+define('MYSQL_PASS', '');
 #define('MYSQL_HOST', 'p:');
 define('MYSQL_HOST', 'localhost');
 define('MYSQL_DATABASE', 'huskyhunt');
