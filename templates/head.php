@@ -13,7 +13,7 @@
 <!-- Source third-party scripts -->
 
 <script src="lib/ionic/release/js/ionic.bundle.js"></script>
-
+<script src="lib/angular-local-storage/angular-local-storage.js"></script>
 <!-- Reference HuskyHunt-specific styles and scripts -->
 <link href="css/huskystyle.css" rel="stylesheet">
 
@@ -27,3 +27,4 @@
 <script src="js/service.levels.js"></script>
 <script src="js/service.quiz.js"></script>
 <script src="js/service.player.js"></script>
+<script src="js/service.auth.js"></script>

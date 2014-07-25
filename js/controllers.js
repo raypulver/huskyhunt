@@ -7,12 +7,17 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     return step4.replace(/&rsquo;/g, '\''); 
   }
 })
-.controller('masterCtrl', function ($scope, $ionicLoading) {
+.controller('masterCtrl', function ($scope, $ionicLoading, Auth, $state) {
   $scope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
     if (toState.resolve) {
       $scope.loadingIndicator = $ionicLoading.show({
         content: 'Loading...'
       });
+    }
+    if (!Auth.authorize(toState.data.access)) {
+      event.preventDefault();
+      $state.go('game.login');
+      $scope.loadingIndicator.hide();
     }
   });
   $scope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
@@ -23,7 +28,21 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     }
   });
 })
-.controller('statusCtrl', function($scope, player, Badges, $state) {
+.controller('loginCtrl', function ($scope, $state, $ionicPopup, Auth) {
+  if (Auth.isAuthenticated())
+    $state.go('game.status');
+  $scope.user = {};
+  $scope.login = function () {
+    Auth.login($scope.user).success(function () {
+      $state.go('game.status');
+    }).error(function () {
+      $ionicPopup.alert({
+        title: 'Invalid User/Pass',
+      });
+    });
+  }
+})
+.controller('statusCtrl', function(localStorageService, $scope, player, Badges, $state) {
   var user = player.data;
   $scope.netid = user.netid;
   $scope.score = user.score;
@@ -31,8 +50,8 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   $scope.goToBadges = function () {
     $state.go('game.badges');
   }
+  console.log(localStorageService.get('auth_token'));
 })
-
 .controller('badgesCtrl', function ($scope, badges) {
   $scope.badges = badges.data;
 })

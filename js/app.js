@@ -1,8 +1,16 @@
-angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.levels', 'huskyhunt.service.player', 'huskyhunt.service.quiz'])
+angular.module('huskyhunt', ['ionic', 'LocalStorageModule', 'ionic.imagetitleview', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.levels', 'huskyhunt.service.player', 'huskyhunt.service.quiz', 'huskyhunt.service.auth'])
 
 .config(function($locationProvider, $stateProvider, $urlRouterProvider) {
   $stateProvider
 
+    .state('login', {
+      url: '/login',
+      templateUrl: 'partials/login.html',
+      controller: 'loginCtrl',
+      data: {
+        access: 0
+      }
+    })
     // setup an abstract state for the tabs directive
     .state('game', {
       url: "/game",
@@ -25,9 +33,11 @@ angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'hus
         player: function (Player) {
           return Player.getStatus();
         }
+      },
+      data: {
+        access: 1
       }
     })
-
     .state('game.badges', {
       url: '/badges',
       views: {
@@ -40,6 +50,9 @@ angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'hus
         badges: function (Badges) {
           return Badges.get();
         }
+      },
+      data: {
+        access: 1
       }
     })
 
@@ -55,6 +68,9 @@ angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'hus
         levels: function (Levels) {
           return Levels.get();
         }
+      },
+      data: {
+        access: 1
       }
     })
     .state('game.play-level', {
@@ -69,6 +85,9 @@ angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'hus
         level: function (Levels, $stateParams) {
           return Levels.get($stateParams.levelId);
         }
+      },
+      data: {
+        access: 1
       }
     })
     .state('game.play-level.quiz', {
@@ -92,10 +111,13 @@ angular.module('huskyhunt', ['ionic', 'ionic.imagetitleview', 'ngSanitize', 'hus
         scores: function (Scores) {
           return Scores.get();
         }
+      },
+      data: {
+        access: 1
       }
     })
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/game/status');
+  $urlRouterProvider.otherwise('/login');
 
 });

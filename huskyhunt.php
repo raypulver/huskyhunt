@@ -1,6 +1,7 @@
 <?php 
 
 #require_once './hh-config.php';
+#include_once 'vendor/firebase/php-jwt/Firebase/PHP-JWT/Authentication/JWT.php'
 
 define('USER_ROLE_PLAYER', 0);
 define('USER_ROLE_ADMIN', 1);
@@ -82,6 +83,15 @@ class HuskyHuntLog {
         fclose($fh);
       }
     }
+  }
+  public static function log_text($str) {
+    if ($fh = fopen(self::$filepath, 'a')) {
+      fwrite($fh, $str . "\n");
+    } else {
+      return false;
+    }
+    fclose($fh);
+    return true;
   }
 }
 
@@ -346,7 +356,7 @@ class HuskyHuntAdmin {
 
 class HuskyHunt {
 
-
+    public static $jwt_key = 'v4h89j';
     public function has_begun() {
         return true;
     }
@@ -1328,6 +1338,7 @@ class HuskyHuntUser {
     public $score   = NULL;
     public $contact = NULL;
     public $badges = array();
+    public $password_hash = NULL;
 
     function __construct($netid = NULL) {
 
@@ -1344,6 +1355,9 @@ class HuskyHuntUser {
       if ($stmt = $db->prepare($SQL)) {
         $stmt->bindValue(':user_id', $user_id);
         if ($result = $stmt->execute()) {
+          if ($stmt->rowCount() == 0) {
+            return false;
+          }
           $row = $stmt->fetch(PDO::FETCH_ASSOC);
           $netid = $row['netid'];
           return new HuskyHuntUser($netid);
@@ -1375,7 +1389,13 @@ class HuskyHuntUser {
 
         return $module_id;
     }
-
+    function login($password) {
+      if (hash("sha256", $password) == $this->password_hash) {
+        return JWT::encode(array('exp' => time() + 86000*3, 'netid' => $netid), HuskyHunt::$jwt_key);
+      } else {
+        return false;
+      }
+    }
     function badges_json() {
       $badges = array();
       foreach ($this->badges as $badge) {
@@ -1647,7 +1667,7 @@ class HuskyHuntUser {
 
     function load($netid) {
     
-        $SQL = 'SELECT user_id, netid, role, score, contact FROM users WHERE netid=:netid';
+        $SQL = 'SELECT user_id, netid, password, role, score, contact FROM users WHERE netid=:netid';
         $db = HuskyHuntDatabase::shared_database();
 
         if (!is_null($netid)) {
@@ -1659,12 +1679,15 @@ class HuskyHuntUser {
                 $stmt->execute();
 
                 if ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                
+                  if ($stmt->rowCount() == 0) {
+                    return false;
+                  } 
                     $this->user_id      = $result['user_id'];
                     $this->netid    = $result['netid'];
                     $this->role    = $result['role'];
                     $this->score    = $result['score'];
                     $this->contact  = $result['contact'];
+                    $this->password_hash = $result['password'];
 
                 } else {
                     $this->netid = $netid;
@@ -1775,11 +1798,25 @@ class HuskyHuntUser {
         }
       }
     }
-
+    function set_password($pass) {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'UPDATE users SET password=:password WHERE netid=:netid';
+      $password_hash = hash("sha256", $pass);
+      $this->password_hash = $password_hash;
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':password', $password_hash);
+        $stmt->bindParam(':netid', $this->netid);
+        $result = $stmt->execute();
+        if ($result) {
+          return true;
+        }
+      }
+      return false;
+    }
     function save() {
         
         $db         = HuskyHuntDatabase::shared_database();
-        $INSERT_SQL = 'INSERT INTO users (netid, date_joined) VALUES (:netid, NOW())';
+        $INSERT_SQL = 'INSERT INTO users (netid, password, date_joined) VALUES (:netid, :password, NOW())';
         $UPDATE_SQL = 'UPDATE users SET score=:score, contact=:contact WHERE netid=:netid';
         $SQL        = (is_null($this->user_id)) ? $INSERT_SQL : $UPDATE_SQL;
 
@@ -1789,7 +1826,8 @@ class HuskyHuntUser {
             
             if ($stmt = $db->prepare($SQL)) {
                 
-                $stmt->bindParam(':netid',      $this->netid);
+              $stmt->bindParam(':netid',      $this->netid);
+              $stmt->bindParam(':password',   $this->password_hash);
 
                 if ($SQL == $UPDATE_SQL) { 
                     $stmt->bindParam(':score',      $this->score);
