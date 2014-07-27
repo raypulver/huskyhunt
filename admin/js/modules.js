@@ -64,6 +64,7 @@ HuskyHuntModuleUI = {
         var insight         = $('#module-form input[name=module_insight]').val(); 
         var points          = $('#module-form input[name=module_points]').val(); 
         var social_points   = $('#module-form input[name=module_social_points]').val(); 
+        var vendor          = $('#module-form input[name=module_vendor]').val();
         var postponable     = $('#module-form input[name=module_postponable]').prop('checked');
         var bonus           = $('#module-form input[name=module_bonus]').prop('checked');
         var knowledge_base           = $('#module-form input[name=module_knowledge_base]').prop('checked');
@@ -77,6 +78,7 @@ HuskyHuntModuleUI = {
             insight: insight,
             points: points,
             social_points: social_points,
+            vendor: vendor,
             postponable: postponable,
             bonus: bonus,
             knowledge_base: knowledge_base,
@@ -456,6 +458,7 @@ HuskyHuntQuestionModal = {
         var question_id     = $('#question-modal input[name=question_id]').val();
         var body            = $('#question-modal textarea[name=question_body]').val();
         var feedback = $('#question-modal input[name=feedback_body]').val();
+        var ad_text = $('#question-modal input[name=ad_text]').val();
         var correct = new Array();
 
         $.each($('input[name="correct[]"]:checked'), function() {
@@ -466,6 +469,7 @@ HuskyHuntQuestionModal = {
             question_id: question_id,
             body: body,
             feedback: feedback,
+            ad_text: ad_text,
             correct: correct
         };
 
@@ -508,6 +512,7 @@ HuskyHuntQuestionModal = {
             $('#ajax-question-id').val(question.question_id);
             CKEDITOR.instances['ajax-question-body'].setData(question.body);
             $('#ajax-feedback-body').val(question.feedback);
+            $('#ajax-ad-text').val(question.ad_text);
             for (index in question.answers) {
 
                 var answer  = question.answers[index];

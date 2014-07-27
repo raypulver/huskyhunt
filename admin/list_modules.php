@@ -11,6 +11,8 @@
         <?php include BASE_PATH . '/templates/navigation.php'; ?>
 
         <div class="container">
+
+          <button style="display:block; margin-left:auto;" onclick="window.location='emails.php'" class="btn btn-lg btn-primary" type="button">Generate Player Email List</button>
             <div class="row">
                 <h1>Modules</h1>
                 

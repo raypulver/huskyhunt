@@ -7,7 +7,8 @@
 <html>
 
     <head>
-        <?php include BASE_PATH . '/templates/head.php'; ?>
+<link rel="stylesheet" href="../lib/bootstrap/dist/css/bootstrap.css">
+<link rel="stylesheet" href="../admin/css/huskyhunt.css">
     </head>
     <body>
         <?php include BASE_PATH . '/templates/navigation.php'; ?>
@@ -18,6 +19,7 @@
                 <h1 style="text-align: center;"> Access Denied! </h1>
                 </div>
             </div>
+            <a href="/admin">Back to Log-in</a>
         </div>
     </body>
 </html>

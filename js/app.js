@@ -1,12 +1,36 @@
 angular.module('huskyhunt', ['ionic', 'LocalStorageModule', 'ionic.imagetitleview', 'ngSanitize', 'huskyhunt.controllers', 'huskyhunt.services', 'huskyhunt.service.badges', 'huskyhunt.service.scores', 'huskyhunt.service.levels', 'huskyhunt.service.player', 'huskyhunt.service.quiz', 'huskyhunt.service.auth'])
 
-.config(function($locationProvider, $stateProvider, $urlRouterProvider) {
+.config(function($locationProvider, $stateProvider, $urlRouterProvider, $httpProvider) {
+  $httpProvider.interceptors.push('AuthInterceptor'); 
   $stateProvider
-
-    .state('login', {
+    .state('auth', {
+      url: '/auth',
+      templateUrl: 'partials/auth.html',
+      abstract: true,
+      data: {
+        access: 0
+      }
+    })
+    .state('auth.login', {
       url: '/login',
-      templateUrl: 'partials/login.html',
-      controller: 'loginCtrl',
+      views: {
+        'action': {
+          templateUrl: 'partials/login.html',
+          controller: 'loginCtrl'
+        }
+      },
+      data: {
+        access: 0
+      }
+    })
+    .state('auth.register', {
+      url: '/register',
+      views: {
+        'action': {
+          templateUrl: 'partials/register.html',
+          controller: 'registerCtrl'
+        }
+      },
       data: {
         access: 0
       }
@@ -118,6 +142,6 @@ angular.module('huskyhunt', ['ionic', 'LocalStorageModule', 'ionic.imagetitlevie
     })
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/login');
+  $urlRouterProvider.otherwise('/auth/login');
 
 });

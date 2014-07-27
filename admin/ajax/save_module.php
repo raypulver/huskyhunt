@@ -13,6 +13,7 @@ $social_points    = post_value('social_points');
 $postponable    = post_value('postponable');
 $bonus    = post_value('bonus');
 $knowledge_base    = post_value('knowledge_base');
+$vendor = post_value('vendor');
 $result     = false;
 
 $module = new HuskyHuntModule($module_id);
@@ -40,6 +41,8 @@ if (!is_null($bonus))
 
 if (!is_null($knowledge_base)) 
     $module->knowledge_base = (strtolower($knowledge_base) == 'true');
+if (!is_null($vendor))
+    $module->vendor = $vendor;
 
 $result = $module->save();
 

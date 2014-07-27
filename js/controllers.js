@@ -28,7 +28,7 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     }
   });
 })
-.controller('loginCtrl', function ($scope, $state, $ionicPopup, Auth) {
+.controller('loginCtrl', function ($scope, $state, $ionicPopup, $ionicModal, Auth) {
   if (Auth.isAuthenticated())
     $state.go('game.status');
   $scope.user = {};
@@ -42,6 +42,33 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
     });
   }
 })
+.controller('registerCtrl', function ($scope, $ionicPopup, $state, Auth) {
+  $scope.goBack = function () {
+    $state.go('auth.login');
+  }
+  $scope.register = function (valid) {
+    if (valid) {
+      if ($scope.user.pass == $scope.user.passConfirm) {
+        Auth.register($scope.user).success(function () {
+          $state.go('game.status');
+        }).error(function (data, status, headers, config) {
+          $ionicPopup.alert({
+            title: JSON.parse(data)
+          });
+        });
+      } else {
+        $ionicPopup.alert({
+          title: 'Error: Passwords don\'t match.'
+        });
+      }
+    } else {
+      $ionicPopup.alert({
+        title: 'Error: Check your input.'
+      });
+    }
+  }
+  $scope.user = {};
+})
 .controller('statusCtrl', function(localStorageService, $scope, player, Badges, $state) {
   var user = player.data;
   $scope.netid = user.netid;
@@ -50,14 +77,14 @@ angular.module('huskyhunt.controllers', []).filter('strip', function () {
   $scope.goToBadges = function () {
     $state.go('game.badges');
   }
-  console.log(localStorageService.get('auth_token'));
 })
 .controller('badgesCtrl', function ($scope, badges) {
   $scope.badges = badges.data;
 })
 
-.controller('levelsCtrl', function($scope, levels) {
+.controller('levelsCtrl', function($scope, levels, Auth) {
   $scope.levels = levels.data;
+  console.log(levels.data);
 })
 .controller('mainLevelCtrl', function($scope, $stateParams, $ionicModal, $timeout, $ionicPopup, level, Quiz) {
   $scope.level = level.data;

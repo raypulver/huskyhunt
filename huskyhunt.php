@@ -156,8 +156,22 @@ class HuskyHuntAdmin {
 
         return $result;    
     }
-    
-    
+    public static function login($netid, $pass) {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT TRUE FROM users WHERE netid = :netid AND password = :password AND role = 1';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':netid', $netid);
+        $stmt->bindParam(':password', hash("sha256", $pass));
+        $stmt->execute();
+        $valid = $stmt->fetch(PDO::FETCH_NUM);
+        if ($valid) {
+          $_SESSION['netid'] = $netid;
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } 
     private function _sql_validate() {
         
         $db     = HuskyHuntDatabase::shared_database();
@@ -166,7 +180,7 @@ class HuskyHuntAdmin {
         
         if ($stmt = $db->prepare($SQL)) {
             
-            $stmt->bindValue(':netid',  NETID,              PDO::PARAM_STR);
+            $stmt->bindValue(':netid',  $_SESSION['netid'],              PDO::PARAM_STR);
             $stmt->bindValue(':role',   USER_ROLE_ADMIN,    PDO::PARAM_INT);
 
             $db->beginTransaction();
@@ -183,8 +197,7 @@ class HuskyHuntAdmin {
 
     public function page_validate() {
 
-#        $valid = $this->_sql_validate();
-        $valid = true;
+        $valid = $this->_sql_validate();
         if (!$valid) {
             
             header('HTTP/1.1 401 Access Denied');
@@ -193,7 +206,13 @@ class HuskyHuntAdmin {
         }
 
     }
-
+    public function module_redirect_if_already_logged_in() {
+      $valid = $this->_sql_validate();
+      if ($valid) {
+        header(sprintf('Location: /admin/list_modules.php'));
+        die();
+      }
+    }
     public function ajax_validate() {
 
         $valid = $this->_sql_validate();
@@ -357,10 +376,29 @@ class HuskyHuntAdmin {
 class HuskyHunt {
 
     public static $jwt_key = '';
+    public static function decode_token($token) {
+      return JWT::decode($token, self::$jwt_key);
+    }
+    
+    public static function get_token_object() {
+      $headers = getallheaders();
+      $token = substr($headers['Authorization'], 7);
+      return self::decode_token($token);
+    }
+    public static function status_code($code) {
+      if ($code == 401) {
+        header('HTTP/1.1 401 Unauthorized', 401);
+      } else if ($code == 400) {
+        header('HTTP/1.1 400 Bad Request');
+      } else if ($code == 403) {
+        header('HTTP/1.1 403 Forbidden');
+      } else if ($code == 201) {
+        header('HTTP/1.1 201 Created');
+      }
+    }
     public function has_begun() {
         return true;
     }
-
     public function has_ended() {
         return false;
     }
@@ -971,8 +1009,8 @@ class HuskyHuntQuestion {
         
         $db = HuskyHuntDatabase::shared_database();
 
-        $INSERT_SQL = 'INSERT INTO questions (body, feedback) VALUES (:body, :feedback)';
-        $UPDATE_SQL = 'UPDATE questions SET body=:body, feedback=:feedback WHERE question_id=:question_id';
+        $INSERT_SQL = 'INSERT INTO questions (body, feedback, ad_text) VALUES (:body, :feedback, :ad_text)';
+        $UPDATE_SQL = 'UPDATE questions SET body=:body, feedback=:feedback, ad_text=:ad_text WHERE question_id=:question_id';
         $SQL        = (is_null($this->question_id)) ? $INSERT_SQL : $UPDATE_SQL; 
         
         $result     = false;
@@ -982,6 +1020,7 @@ class HuskyHuntQuestion {
                 $stmt->bindValue(':question_id', $this->question_id, PDO::PARAM_INT);
             $stmt->bindValue(':body', $this->body, PDO::PARAM_STR);
             $stmt->bindValue(':feedback', $this->feedback, PDO::PARAM_STR);
+            $stmt->bindValue(':ad_text', $this->ad_text, PDO::PARAM_STR);
             $db->beginTransaction();
             $stmt->execute(); 
             
@@ -1249,9 +1288,9 @@ class HuskyHuntModule {
 
         $db         = HuskyHuntDatabase::shared_database();
         #$INSERT_SQL = 'INSERT INTO modules (title, body, game_id) VALUES (:title, :body, :game_id)';
-        $INSERT_SQL = 'INSERT INTO modules (title, body, insight, points, social_points, postponable, bonus, knowledge_base) VALUES (:title, :body, :insight, :points, :social_points, :postponable, :bonus, :knowledge_base)';
+        $INSERT_SQL = 'INSERT INTO modules (title, body, insight, points, social_points, postponable, bonus, knowledge_base, vendor) VALUES (:title, :body, :insight, :points, :social_points, :postponable, :bonus, :knowledge_base, :vendor)';
         #$UPDATE_SQL = 'UPDATE modules SET title=:title, body=:body, game_id=:game_id WHERE module_id=:module_id';
-        $UPDATE_SQL = 'UPDATE modules SET title=:title, body=:body, insight = :insight, points = :points, social_points = :social_points, postponable = :postponable, bonus = :bonus, knowledge_base = :knowledge_base WHERE module_id=:module_id';
+        $UPDATE_SQL = 'UPDATE modules SET title=:title, body=:body, insight = :insight, points = :points, social_points = :social_points, postponable = :postponable, bonus = :bonus, knowledge_base = :knowledge_base, vendor = :vendor WHERE module_id=:module_id';
         $SQL        = (is_null($this->module_id)) ? $INSERT_SQL : $UPDATE_SQL;
         $result     = false;
 
@@ -1268,6 +1307,7 @@ class HuskyHuntModule {
             $stmt->bindValue(':postponable',    $this->postponable, PDO::PARAM_BOOL);
             $stmt->bindValue(':bonus',    $this->bonus, PDO::PARAM_BOOL);
             $stmt->bindValue(':knowledge_base',    $this->knowledge_base, PDO::PARAM_BOOL);
+            $stmt->bindValue(':vendor', $this->vendor, PDO::PARAM_STR);
             //$stmt->bindValue(':game_id',    $this->game_id, PDO::PARAM_INT);
              
             $db->beginTransaction();
@@ -1334,6 +1374,7 @@ class HuskyHuntUser {
 
     public $user_id     = NULL;
     public $netid   = NULL;
+    public $alias = NULL;
     public $role    = 0;
     public $score   = NULL;
     public $contact = NULL;
@@ -1346,7 +1387,24 @@ class HuskyHuntUser {
             $this->load($netid);
 
     }
-
+    public static function email_is_taken($email) {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT * FROM users WHERE contact=:contact';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':contact', $email);
+        $stmt->execute();
+        return ($stmt->fetchColumn() > 0);
+      }
+    }
+    public static function alias_is_taken($alias) {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT * FROM users WHERE alias=:alias';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':alias', $alias);
+        $stmt->execute();
+        return ($stmt->fetchColumn() > 0);
+      }
+    }
     public static function from_id($user_id) {
       
       $db = HuskyHuntDatabase::shared_database();
@@ -1391,7 +1449,7 @@ class HuskyHuntUser {
     }
     function login($password) {
       if (hash("sha256", $password) == $this->password_hash) {
-        return JWT::encode(array('exp' => time() + 86000*3, 'netid' => $netid), HuskyHunt::$jwt_key);
+        return JWT::encode(array('exp' => time() + 86000*3, 'netid' => $this->netid), HuskyHunt::$jwt_key);
       } else {
         return false;
       }
@@ -1603,6 +1661,7 @@ class HuskyHuntUser {
         if ($result && $complete) {
             $this->score += $module->current_points();
             $this->save();
+            HuskyHuntLog::log_text('user saved');
         }
 
         return $result;
@@ -1667,7 +1726,7 @@ class HuskyHuntUser {
 
     function load($netid) {
     
-        $SQL = 'SELECT user_id, netid, password, role, score, contact FROM users WHERE netid=:netid';
+        $SQL = 'SELECT user_id, netid, alias, password, role, score, contact FROM users WHERE netid=:netid';
         $db = HuskyHuntDatabase::shared_database();
 
         if (!is_null($netid)) {
@@ -1683,7 +1742,8 @@ class HuskyHuntUser {
                     return false;
                   } 
                     $this->user_id      = $result['user_id'];
-                    $this->netid    = $result['netid'];
+                  $this->netid    = $result['netid'];
+                    $this->alias = $result['alias'];
                     $this->role    = $result['role'];
                     $this->score    = $result['score'];
                     $this->contact  = $result['contact'];
@@ -1798,6 +1858,9 @@ class HuskyHuntUser {
         }
       }
     }
+    function set_password_without_commit($pass) {
+      $this->password_hash = hash("sha256", $pass);
+    }
     function set_password($pass) {
       $db = HuskyHuntDatabase::shared_database();
       $SQL = 'UPDATE users SET password=:password WHERE netid=:netid';
@@ -1816,8 +1879,8 @@ class HuskyHuntUser {
     function save() {
         
         $db         = HuskyHuntDatabase::shared_database();
-        $INSERT_SQL = 'INSERT INTO users (netid, password, date_joined) VALUES (:netid, :password, NOW())';
-        $UPDATE_SQL = 'UPDATE users SET score=:score, contact=:contact WHERE netid=:netid';
+        $INSERT_SQL = 'INSERT INTO users (netid, alias, contact, password, date_joined) VALUES (:netid, :alias, :contact, :password, NOW())';
+        $UPDATE_SQL = 'UPDATE users SET password=:password, alias=:alias, score=:score, contact=:contact WHERE netid=:netid';
         $SQL        = (is_null($this->user_id)) ? $INSERT_SQL : $UPDATE_SQL;
 
         $result     = false;
@@ -1828,10 +1891,10 @@ class HuskyHuntUser {
                 
               $stmt->bindParam(':netid',      $this->netid);
               $stmt->bindParam(':password',   $this->password_hash);
-
+              $stmt->bindParam(':alias', $this->alias);
+              $stmt->bindParam(':contact', $this->contact);
                 if ($SQL == $UPDATE_SQL) { 
                     $stmt->bindParam(':score',      $this->score);
-                    $stmt->bindParam(':contact',    $this->contact);
                 }
     
                 $db->beginTransaction();

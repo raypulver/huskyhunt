@@ -54,8 +54,15 @@
                             <input class="form-control" type="text" name="module_title" value="<?=htmlspecialchars($module->title)?>" />
                         </div>
                     </div>
-                </div> 
-  
+                </div>
+                <div class="row">
+                  <div class="col-md-9">
+                    <div class="form-group">
+                      <label for="vendor"><h4>Vendor</h4>
+                      <input class="form-control" type="text" name="module_vendor" value="<?=$module->vendor?>">
+                    </div>
+                  </div> 
+                </div>
                 <div class="row">
                     <div class="col-md-10">
                         <div class="form-group">
@@ -227,6 +234,10 @@
                             <div class="form-group">
                                 <label for="feedback_body">Feedback: (shown on wrong answer)</label><br>
                                 <input type="text" style="width: 100%" name="feedback_body" id="ajax-feedback-body">
+                            </div>
+                            <div class="form-group">
+                                <label for="ad_text">Ad Text:</label><br>
+                                <input type="text" style="width: 100%" name="ad_text" id="ajax-ad-text">
                             </div>
                             <hr>
                             <h4 class="modal-title">Answers:</h4>

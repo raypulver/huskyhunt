@@ -5,6 +5,8 @@
   $request = json_decode($postdata);
   $question_id = $request->q; 
   $answer_id = $request->a;
+  $token = HuskyHunt::decode_token($request->token);
+  $USER = new HuskyHuntUser($token->netid);
   $retjson = array(
     'winner' => false,
     'feedback' => '',
