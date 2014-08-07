@@ -95,6 +95,11 @@
                     </div>
                     <div class="col-md-2" style="padding-top: 25px;">
                         <div class="checkbox">
+                            <label for="module_decay">
+                                <input type="checkbox" name="module_decay" <?=($module->decay ? 'checked' : '')?>> <h4>Point Decay</h4>
+                            </label>
+                        </div>
+                        <div class="checkbox">
                             <label for="module_postponable">
                                 <input type="checkbox" name="module_postponable" <?=($module->postponable ? 'checked' : '')?> /> <h4>Postponable</h4>
                             </label>
@@ -286,7 +291,8 @@
                             <input type="hidden" name="answer_id" value="NULL" />
                             <div class="form-group"> 
                                 <label for="answer_body">Answer:</label>
-                                <textarea id='answer-ckeditor' class="ckeditor" name="answer_body"></textarea>
+                                <!--<textarea id='answer-ckeditor' class="ckeditor" name="answer_body"></textarea>-->
+                                <textarea style="width: 100%" id="answer-body" type="text" name="answer_body"></textarea>
                             </div>
                         </form>
                     </div>

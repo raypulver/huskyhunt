@@ -1,11 +1,14 @@
 var BASE_URL = 'http://ecdesign.co'
 var NOP = function() {}
 var strip = function (text) {
-  var step1 = String(text).replace(/<[^>]+>/gm, '');
-  var step2 = step1.replace(/&nbsp;/g, ' ');
-  var step3 = step2.replace(/\&mdash;/g, '-');
-  var step4 = step3.replace(/\&ndash;/g, '-');
-  return step4.replace(/&rsquo;/g, '\'');
+  return String(text).replace(/<[^>]+>/gm, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&mdash;/g, '-')
+    .replace(/&ndash;/g, '-')
+    .replace(/&lsquo;/g, '\'')
+    .replace(/&rsquo;/g, '\'')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"');
 }
 var MODULE_QUESTION_ROW =   '<tr question_id=%d>' +
                             '   <td class="question-body">%s</td>' +
@@ -63,6 +66,7 @@ HuskyHuntModuleUI = {
         var body            = $('#module-form textarea[name=module_body]').val();
         var insight         = $('#module-form input[name=module_insight]').val(); 
         var points          = $('#module-form input[name=module_points]').val(); 
+        var decay           = $('#module-form input[name=module_decay]').prop('checked');
         var social_points   = $('#module-form input[name=module_social_points]').val(); 
         var vendor          = $('#module-form input[name=module_vendor]').val();
         var postponable     = $('#module-form input[name=module_postponable]').prop('checked');
@@ -78,6 +82,7 @@ HuskyHuntModuleUI = {
             insight: insight,
             points: points,
             social_points: social_points,
+            decay: decay,
             vendor: vendor,
             postponable: postponable,
             bonus: bonus,
@@ -604,7 +609,8 @@ HuskyHuntAnswerModal = {
     load: function(answer) {
 
         $('#answer-modal input[name=answer_id]').val(answer.answer_id);
-        CKEDITOR.instances['answer-ckeditor'].setData(answer.body);
+        $('#answer-modal textarea[name=answer_body]').val(answer.body);
+        //CKEDITOR.instances['answer-ckeditor'].setData(answer.body);
 
     },
     

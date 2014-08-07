@@ -1,22 +1,22 @@
-<!-- 
-  Create tabs with an icon and label, using the tabs-positive style. 
-  Each tab's child <ion-nav-view> directive will have its own 
-  navigation history that also transitions its views in and out.
--->
 <ion-tabs class="tabs-icon-top">
-
-
+  <input type="text" style="position:absolute; top: -100px; left: 0px" ion-force-scroll>
+  <!-- Play tab -->  
   <ion-tab title="Play" icon="icon ion-bluetooth" href="#/game/levels">
     <ion-nav-view name="level-board"></ion-nav-view>
   </ion-tab>
-  <!-- Pets Tab -->
+  <!-- Status tab -->
   <ion-tab title="Status" icon="icon ion-camera" href="#/game/status">
     <ion-nav-view name="game-status"></ion-nav-view>
   </ion-tab>
 
-  <!-- About Tab -->
+  <!-- Scoreboard tab -->
   <ion-tab title="Scores" icon="icon ion-calendar" href="#/game/scores">
     <ion-nav-view name="scoreboard"></ion-nav-view>
+  </ion-tab>
+
+  <!-- Settings tab -->
+  <ion-tab title="Settings" icon="icon ion-gear-b" href="#/game/settings">
+    <ion-nav-view name="settings-view"></ion-nav-view>
   </ion-tab>
 
 

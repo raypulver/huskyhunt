@@ -5,13 +5,14 @@ date_default_timezone_set('America/New_York');
 define('HH_DEBUG', true);
 
 define('MYSQL_USER', 'huskyhunt');
-define('MYSQL_PASS', '');
+define('MYSQL_PASS', 'dmx2bnra');
 #define('MYSQL_HOST', 'p:');
 define('MYSQL_HOST', 'localhost');
 define('MYSQL_DATABASE', 'huskyhunt');
 
 define('BASE_PATH', '/var/www');
 define('BASE_URL', 'http://ecdesign.co');
+define('DOMAIN_NAME', 'ecdesign.co');
 define('LOG_PATH', '/var/log/apache2');
 
 include_once '/www/vendor/autoload.php';

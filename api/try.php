@@ -102,6 +102,13 @@
     if ($USER->get_rank() < 11) {
       $USER->insert_badge_by_id(5);
     }
+    foreach (HuskyHuntContentArea::load_all() as $ca) {
+      if ($USER->has_completed_content_area($ca)) {
+        HuskyHuntLog::log_text('has_completed_content_area is true');
+        $USER->insert_badge_by_id($ca->badge->badge_id);
+      } else
+        HuskyHuntLog::log_text('has_completed_content_area is false');
+    }
   }
   HuskyHuntLog::log_last_attempt();
 ?>

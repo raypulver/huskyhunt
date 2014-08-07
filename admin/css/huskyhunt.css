@@ -1,3 +1,65 @@
+.navbar > li.active {
+  background-color: white;
+  color: #0F1938;
+}
+div.shift-right {
+  position: relative;
+  left: 30px;
+}
+div.bottom-margin {
+  margin-bottom: 5px;
+}
+div.shift-down {
+  position: relative;
+  top: 10px;
+}
+div#player-list {
+  float: right;
+  width: 20%;
+  border: 5px solid #0F1938;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  background-color: #0F1938
+}
+div#player-list-content {
+  margin-top: 10px;
+  background-color: white;
+}
+div#player-list-content a {
+  color: #0F1938;
+  font-weight: bold;
+}
+div#player-list-content a:hover {
+  color: #233B84;
+}
+
+div#player-list h2 {
+  margin-left: 10px;
+  color: white
+}
+div#player-list input.form-control {
+  margin-bottom: 10px;
+  margin-left: 12px;
+  width: 80%;
+  background-color: #233B84;
+  color: white;
+}
+div#player-list input.form-control::-webkit-input-placeholder {
+  color: white;
+}
+div#player-list a div:hover {
+  background-color: #0F1938;
+}
+div#player-list a:hover {
+  color: white;
+  text-decoration: none;
+}
+div#player-info {
+  float: left;
+  width: 80%;
+  background: #FFF;
+}
 
 body {
     background: white;
@@ -115,7 +177,6 @@ table {
 #social-modal .modal-dialog {
     width: 512px;
 }
-
 .tab-pane {
     padding-top: 20px;
 }
@@ -182,4 +243,6 @@ table {
     */
 }
 
-
+div.pad-right {
+  padding-right: 50px;
+}

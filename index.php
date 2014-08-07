@@ -2,7 +2,7 @@
 <?php 
     error_reporting(E_ALL);
     ini_set('display_errors', TRUE);
-    error_reporting(~0);
+error_reporting(~0);
     $huskyhunt = new HuskyHunt();
 
     $USER->save();

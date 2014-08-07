@@ -10,6 +10,7 @@ $body       = post_value('body');
 $insight    = post_value('insight');
 $points    = post_value('points');
 $social_points    = post_value('social_points');
+$decay  = post_value('decay');
 $postponable    = post_value('postponable');
 $bonus    = post_value('bonus');
 $knowledge_base    = post_value('knowledge_base');
@@ -32,7 +33,8 @@ if (is_numeric($points))
 
 if (is_numeric($social_points)) 
     $module->social_points = intval($social_points);
-
+if (!is_null($decay))
+    $module->decay = (strtolower($decay) == 'true');
 if (!is_null($postponable)) 
     $module->postponable = (strtolower($postponable) == 'true');
 

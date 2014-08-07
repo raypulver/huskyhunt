@@ -14,11 +14,11 @@
   <div class="list" ng-if="level.questions[selectedQuestion].multiple_answer">
     <ion-checkbox ng-repeat="answer in level.questions[selectedQuestion].answers" ng-model="choices[answer.id]">{{answer.value | strip}}</ion-checkbox>
   </div>
-  <div class="card">
+  <div class="card" ng-if="level.vendor.length > 1">
     <div style="font-size: 11px" class="item item-divider">
       Sponsored by {{level.vendor}}
     </div>
-    <div ng-bind-html="level.questions[selectedQuestion].ad_text" class="item item-text-wrap">
+    <div ng-if="level.questions[selectedQuestion].ad_text.length > 1" ng-bind-html="level.questions[selectedQuestion].ad_text" class="item item-text-wrap">
     </div>
   </div>
   <button id="submit" class="button button-clear" ng-if="!level.questions[selectedQuestion].multiple_answer" ng-click="attemptQuestion(choice)">Submit</button>
