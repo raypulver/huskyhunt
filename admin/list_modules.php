@@ -12,7 +12,6 @@
         <?php include BASE_PATH . '/templates/navigation.php'; ?>
         <div class="container" ng-controller="contentAreasCtrl">
           
-          <button style="display:block; margin-left:auto;" onclick="window.location='emails.php'" class="btn btn-lg btn-primary" type="button">Generate Player Email List</button>
             <div class="row">
               <h1>Content Areas</h1>
             </div>
@@ -26,7 +25,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr ng-repeat="contentArea in contentAreas track by $index">
+                  <tr ng-repeat="contentArea in contentAreas" ng-animate="'animate'">
                     <td>{{contentArea.name}}</td>
                     <td class="icon-cell"><a ng-click="editContentArea(contentArea)"><img class="img24x24" src="/images/edit_button.png" alt="edit" /></a></td>
                     <td class="icon-cell"><a ng-click="removeContentArea(contentArea)"><img class="img24x24" src="/images/prohibition_button.png" alt="delete" /></a></td>

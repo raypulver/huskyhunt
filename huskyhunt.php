@@ -465,7 +465,7 @@ class HuskyHuntAdmin {
 
 class HuskyHunt {
 
-    public static $jwt_key = 'v4h89j';
+    public static $jwt_key = '';
     public static function decode_token($token) {
       return JWT::decode($token, self::$jwt_key);
     }
