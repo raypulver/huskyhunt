@@ -112,7 +112,7 @@ class HuskyHuntLog {
           self::log_text($correct_count . '/1 correct.');
           self::log_text('Answer: "' . $answer . '"');
         }
-        self::log_text('Rank is now ' . $user->get_rank());
+        self::log_text('Rank is now ' . $user->get_rank_remix());
         $fh = fopen(self::$filepath, 'a');
         fwrite($fh, $log_text);
         fclose($fh);
@@ -244,19 +244,16 @@ class HuskyHuntAdmin {
       }
     }
     public static function login($netid, $pass) {
-      $db = HuskyHuntDatabase::shared_database();
-      $SQL = 'SELECT TRUE FROM users WHERE netid = :netid AND password = :password AND role = 1';
-      if ($stmt = $db->prepare($SQL)) {
-        $stmt->bindParam(':netid', $netid);
-        $stmt->bindParam(':password', hash("sha256", $pass));
-        $stmt->execute();
-        $valid = $stmt->fetch(PDO::FETCH_NUM);
-        if ($valid) {
+      $user = new HuskyHuntUser($netid);
+      if ($user->login($pass)) {
+        if (intval($user->role) == 1) {
           $_SESSION['netid'] = $netid;
           return true;
         } else {
           return false;
         }
+      } else {
+        return false;
       }
     } 
     public static function logout() {
@@ -465,7 +462,7 @@ class HuskyHuntAdmin {
 
 class HuskyHunt {
 
-    public static $jwt_key = '';
+    public static $jwt_key = JWT_KEY;
     public static function decode_token($token) {
       return JWT::decode($token, self::$jwt_key);
     }
@@ -1705,6 +1702,14 @@ class HuskyHuntUser {
     public $badges_enabled = false;
     public $password_hash = NULL;
 
+    // LDAP Attributes
+
+    public $cn = NULL;
+    public $mail = NULL;
+    public $uconnPersonAffiliation = NULL;
+    public $eduPersonAffiliation = NULL;
+    public $title = NULL;
+
     function __construct($netid = NULL) {
 
         if (!is_null($netid)) 
@@ -1791,6 +1796,53 @@ class HuskyHuntUser {
     public static function calculate_score($score, $seconds_passed) {
       return ceil((float) $score / 3 + ((float) 2 / 3) * $score * pow((float) 1 / 4, (float) $seconds_passed / 86400));
     }
+    public function scores() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT netid, alias, score FROM users WHERE netid != \'\' ORDER BY score DESC';
+      $rank = 0;
+      $previous_score = PHP_INT_MAX;
+      $rows = array();
+      if ($stmt = $db->prepare($SQL)) {
+        $result = $stmt->execute();
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $name = $row['netid'];
+          if (!is_null($row['alias']) && strlen($row['alias']) > 1) {
+            $name = $row['alias'];
+          }
+          $score = $row['score'];
+          if (!is_null($name) && !is_null($score)) {
+            if ($score < $previous_score)
+              $rank ++;
+            $new_row = array('rank' => $rank, 'netid' => $name, 'points' => $score);
+            if ($row['netid'] == $this->netid)
+              $new_row['self'] = true;
+            $rows[] = $new_row;
+            $previous_score = $score;
+          }
+        }
+      }
+      echo json_encode($rows);
+    }
+    public function get_ldap_data() {
+      if ($ds = ldap_connect(LDAPURL)) {
+        @ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+        if (@ldap_bind($ds, LDAPBINDDN, LDAPBINDPW)) {
+          $entries = ldap_get_entries($ds, ldap_search($ds, LDAPBASEDN, "uid=" . $this->netid));
+          if ($entries["count"] == 1) {
+            $this->cn = $entries[0]['cn'][0];
+            $this->mail = $entries[0]['mail'][0];
+            $this->uconnPersonAffiliation = $entries[0]['uconnpersonaffiliation'];
+            $this->eduPersonAffiliation = $entries[0]['edupersonaffiliation'];
+            if (isset($entries[0]['title']))
+              $this->title = $entries[0]['title'][0];
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
     public function count_active_days() {
       $days = new Set();
       foreach ($this->attempts as $attempt) {
@@ -1841,13 +1893,25 @@ class HuskyHuntUser {
         return $row['scavenger_hunt'];
       }
     }
-    public function uncomplete_all_levels() {
+    public function reset_player() {
       $db = HuskyHuntDatabase::shared_database();
       $SQL = 'DELETE FROM grades WHERE user_id = :user_id';
+      $success = 1;
       if ($stmt = $db->prepare($SQL)) {
         $stmt->bindValue(':user_id', $this->user_id);
-        return $stmt->execute() ? true : false;
+        $success &= $stmt->execute();
       }
+      $SQL = 'DELETE FROM map_bu WHERE user_id = :user_id';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindValue(':user_id', $this->user_id);
+        $success &= $stmt->execute();
+      }
+      $SQL = 'DELETE FROM users WHERE netid = :netid';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindValue(':netid', $this->netid);
+        $success &= $stmt->execute();
+      }
+      return $success;
     }
     public function daily_module() {
 
@@ -1872,8 +1936,13 @@ class HuskyHuntUser {
         return $module_id;
     }
     function login($password) {
-      if (hash("sha256", $password) == $this->password_hash) {
-        return JWT::encode(array('exp' => time() + 86000*3, 'netid' => $this->netid), HuskyHunt::$jwt_key);
+      if ($ds = ldap_connect(LDAPURL)) {
+        @ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+        if (@ldap_bind($ds, 'uid=' . $this->netid . ',ou=people,dc=uconn,dc=edu', $password)) {
+          return JWT::encode(array('exp' => time() + 86000*3, 'netid' => $this->netid), HuskyHunt::$jwt_key);
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
@@ -2233,6 +2302,30 @@ class HuskyHuntUser {
             }
         }
     }
+    function get_rank_remix() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT netid, alias, score FROM users WHERE netid != \'\' ORDER BY score DESC';
+      $rank = 0;
+      $previous_score = PHP_INT_MAX;
+      $rows = array();
+      if ($stmt = $db->prepare($SQL)) {
+        $result = $stmt->execute();
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $name = $row['netid'];
+          if (!is_null($row['alias']) && strlen($row['alias']) > 1) {
+            $name = $row['alias'];
+          }
+          $score = $row['score'];
+          if (!is_null($name) && !is_null($score)) {
+            if ($score < $previous_score)
+              $rank ++;
+            if ($row['netid'] == $this->netid)
+              return $rank;
+            $previous_score = $score;
+          }
+        }
+      }
+    }
       
     function scavenger_modules_completed() {
       $db = HuskyHuntDatabase::shared_database();
@@ -2267,8 +2360,6 @@ class HuskyHuntUser {
     }
 
     function insert_badge_by_id($badge_id) {
-
-      $add_badge = true;
       $db = HuskyHuntDatabase::shared_database();
       $SQL = 'SELECT * FROM map_bu WHERE user_id = :user_id;';
       if ($stmt = $db->prepare($SQL)) {
@@ -2276,21 +2367,17 @@ class HuskyHuntUser {
         $stmt->execute();
         while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
           if ($result['badge_id'] == $badge_id) {
-            $add_badge = false;
+            return false;
           }
         }
       }
 
-      if ($add_badge) {
-        $SQL = 'INSERT INTO map_bu (user_id, badge_id, time_awarded) VALUES (:user_id, :badge_id, NOW());';
-        if ($stmt = $db->prepare($SQL)) {
-          $stmt->bindParam(':user_id', $this->user_id);
-          $stmt->bindParam(':badge_id', $badge_id);
-          $stmt->execute();
-          return true;
-        } else {
-          return false;
-        }
+      $SQL = 'INSERT INTO map_bu (user_id, badge_id, time_awarded) VALUES (:user_id, :badge_id, NOW());';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        $stmt->bindParam(':badge_id', $badge_id);
+        $stmt->execute();
+        return true;
       } else {
         return false;
       }

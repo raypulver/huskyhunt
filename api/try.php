@@ -53,7 +53,7 @@
   if (!$retjson['winner']) {
     $retjson['feedback'] = $question->feedback;
   }
-  echo json_encode($retjson);
+//  echo json_encode($retjson);
 
   $db = HuskyHuntDatabase::shared_database();
   $SQL = 'INSERT INTO attempts (user_id, question_id, answer, time, correct) VALUES (:user_id, :question_id, :answer, NOW(), :correct);';
@@ -88,27 +88,39 @@
     }
     $USER = new HuskyHuntUser($USER->netid);
     if ($USER->score > 100) {
-      $USER->insert_badge_by_id(1);
+      if ($USER->insert_badge_by_id(1)) {
+        $retjson['new_badge'] = true;
+      }
     }
     if ($USER->scavenger_modules_completed() > 6) {
-      $USER->insert_badge_by_id(2);
+      if ($USER->insert_badge_by_id(2)) {
+        $retjson['new_badge'] = true;
+      }
     }
     if ($USER->other_modules_completed() > 6) {
-      $USER->insert_badge_by_id(3);
+      if ($USER->insert_badge_by_id(3)) {
+        $retjson['new_badge'] = true;
+      }
     }
-    if ($USER->get_rank() < 26) {
-      $USER->insert_badge_by_id(4);
+    $new_rank = $USER->get_rank_remix();
+    if ($new_rank < 26) {
+      if ($USER->insert_badge_by_id(4)) {
+        $retjson['new_badge'] = true;
+      }
     }
-    if ($USER->get_rank() < 11) {
-      $USER->insert_badge_by_id(5);
+    if ($new_rank < 11) {
+      if ($USER->insert_badge_by_id(5)) {
+        $retjson['new_badge'] = true;
+      }
     }
     foreach (HuskyHuntContentArea::load_all() as $ca) {
       if ($USER->has_completed_content_area($ca)) {
-        HuskyHuntLog::log_text('has_completed_content_area is true');
-        $USER->insert_badge_by_id($ca->badge->badge_id);
-      } else
-        HuskyHuntLog::log_text('has_completed_content_area is false');
+        if ($USER->insert_badge_by_id($ca->badge->badge_id)) {
+          $retjson['new_badge'] = true;
+        }
+      }
     }
   }
   HuskyHuntLog::log_last_attempt();
+  echo json_encode($retjson);
 ?>

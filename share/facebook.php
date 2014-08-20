@@ -1,10 +1,13 @@
 <?php require_once '../hh-config.php'; ?>
 <?php 
 
-    $module_id = session_value('MODULE_ID');
- 
-    #html_debug($module_id, $USER);
-     
+/*    error_reporting(E_ALL);
+    ini_set('display_errors', TRUE);
+error_reporting(-1); */
+    $module_id = $_GET['id'];
+    $netid = $_GET['netid'];
+    $USER = new HuskyHuntUser($netid);
+ // end new code
     if (!is_numeric($module_id) || is_null($USER)) {
         // TODO REDIRECT;
         exit();
@@ -25,7 +28,7 @@
 
     $client->server = 'Facebook'; 
 
-    $client->redirect_uri = BASE_URL . '/share/facebook.php';
+    $client->redirect_uri = BASE_URL . '/share/facebook.php?id=' . $module_id . '&netid=' . $netid;
 
     $client->client_id = OAUTH_CLIENT_ID;
     $client->client_secret = OAUTH_CLIENT_SECRET;
@@ -49,6 +52,7 @@
 
                 if ($success)
                     $USER->share_success($module_id, HH_SOCIAL_FACEBOOK, $update);
+                    header('Location: /#/game/shared');
 
             }
         }
@@ -61,8 +65,8 @@
 
     if ($success) {
         $client->ResetAccessToken();
-        redirect('share/success.php');   
+//        echo '<script>window.location = "/#/game/shared"</script>';
     } else {
-        redirect('share/failure.php');   
+      echo 'failure because: ' . $client->error;
     }
  

@@ -1,7 +1,10 @@
 <ion-view title="HuskyBadges">
-<ion-content has-header="true" has-footer="true" padding="true">
+<ion-content has-header="true" has-footer="true" padding="true" tabindex="0" ion-enable-scroll>
     <ion-list>
       <div class="item item-divider">Earned Badges</div>
+      <ion-item ng-if="badges.length === 0">
+        None yet. Play levels to earn badges!
+      </ion-item>
       <ion-item ng-repeat="badge in badges" class="item-thumbnail-left">
         <img ng-src="images/badges/{{badge.image}}">
         <div class="badge-name">{{badge.name}}</div>

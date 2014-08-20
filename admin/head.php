@@ -14,13 +14,14 @@
 <script src="../lib/angular-ui-router/release/angular-ui-router.js"></script>
 <script src="../lib/angular-strap/dist/angular-strap.js"></script>
 <script src="../lib/angular-strap/dist/angular-strap.tpl.js"></script>
+<script src="../lib/angular-animate/angular-animate.js"></script>
 <script src="ckeditor-full/ckeditor.js"></script>
 <script src="ckeditor-full/adapters/jquery.js"></script>
 <script src="js/filter.strip.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/datetimepicker.js"></script>
 <script type="text/javascript">
-angular.module('huskyadmin', ['huskyhunt.filter.strip', 'ui.router', 'mgcrea.ngStrap', 'angularFileUpload']).controller('navCtrl', function ($scope) {
+angular.module('huskyadmin', ['ngAnimate', 'huskyhunt.filter.strip', 'ui.router', 'mgcrea.ngStrap', 'angularFileUpload']).controller('navCtrl', function ($scope) {
   $scope.loggedIn = <?= isset($_SESSION['netid']) ? 'true' : 'false' ?>;
 });
 

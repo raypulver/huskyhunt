@@ -25,10 +25,10 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr ng-repeat="contentArea in contentAreas" ng-animate="'animate'">
+                  <tr ng-repeat="contentArea in contentAreas" class="netid-animation">
                     <td>{{contentArea.name}}</td>
-                    <td class="icon-cell"><a ng-click="editContentArea(contentArea)"><img class="img24x24" src="/images/edit_button.png" alt="edit" /></a></td>
-                    <td class="icon-cell"><a ng-click="removeContentArea(contentArea)"><img class="img24x24" src="/images/prohibition_button.png" alt="delete" /></a></td>
+                    <td class="icon-cell"><a ng-click="editContentArea(contentArea)"><img style="cursor: pointer" class="img24x24" src="/images/edit_button.png" alt="edit" /></a></td>
+                    <td class="icon-cell"><a ng-click="removeContentArea(contentArea)"><img style="cursor: pointer" class="img24x24" src="/images/prohibition_button.png" alt="delete" /></a></td>
                   </tr>
                 </tbody>
               </table>

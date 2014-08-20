@@ -24,7 +24,7 @@
                   <input type="text" class="form-control" style="border-radius:0px" id="netid" ng-model="user.netid" placeholder="Enter NetID">
                 </div>
                 <div class="form-group">
-                  <label for="password">Password <a ng-click="openModal()">(forgot password)</a></label>
+                  <label for="password">Password <!--<a ng-click="openModal()">(forgot password)</a> --></label>
                   <input type="password" class="form-control" style="border-radius:0px" id="password" ng-model="user.pass" placeholder="Password">
                 </div>
                 <button ng-click="login()" type="submit" class="btn btn-sm btn-default">Sign in</button>
