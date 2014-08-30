@@ -5,14 +5,14 @@ date_default_timezone_set('America/New_York');
 define('HH_DEBUG', true);
 
 define('MYSQL_USER', 'huskyhunt');
-define('MYSQL_PASS', 'dmx2bnra');
+define('MYSQL_PASS', '');
 #define('MYSQL_HOST', 'p:');
 define('MYSQL_HOST', 'localhost');
 define('MYSQL_DATABASE', 'huskyhunt');
 
-define('LDAPBINDDN', 'uid=uits-huskyhunt,ou=accounts,ou=ldap,dc=uconn,dc=edu');
+define('LDAPBINDDN', '');
 define('LDAPBINDPW', '');
-define('LDAPURL', 'ldaps://ldap.uconn.edu:636');
+define('LDAPURL', '');
 define('LDAPBASEDN', 'dc=uconn,dc=edu');
 
 define('JWT_KEY', '');
