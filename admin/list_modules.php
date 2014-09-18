@@ -1,6 +1,6 @@
 <?php require_once '../hh-config.php'; ?>
 <?php require_once './hh-admin.php'; ?>
-<?php $ADMIN->page_validate(); ?>
+<?php // $ADMIN->page_validate(); ?>
 <html ng-app="huskyadmin">
 
     <head>
@@ -35,7 +35,6 @@
             </div>
             <div class="row">
                 <h1>Modules</h1>
-                
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -47,7 +46,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                    
+                     <tr>
+                       <td style="width: 30px; text-align: center">
+                         X
+                       </td>
+                       <td>Final Assessment</td>
+                       <td class="icon-cell"></td>
+                       <td class="icon-cell"><a href="edit_assessment.php"><img class="img24x24" src="<?=BASE_URL?>/images/edit_button.png" alt="edit" /></a></td>
+                       <td class="icon-cell"></td>
+                     </tr>
                         <?php 
                             $modules = $ADMIN->get_modules();
                             if (!empty($modules)) {

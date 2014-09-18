@@ -44,7 +44,8 @@
       $real_answer_stripped = preg_replace('/&nbsp;/', ' ', $real_answer_stripped);
       $real_answer_stripped = preg_replace('/&rsquo;/', '\'', $real_answer_stripped);
       $real_answer_stripped = preg_replace('/\\n/', '', $real_answer_stripped);
- 
+      $real_answer_stripped = strtolower($real_answer_stripped);
+      $answer_id = strtolower($answer_id);
       if ($real_answer_stripped == $answer_id) {
         $retjson['winner'] = true;
       }
@@ -120,6 +121,8 @@
         }
       }
     }
+    if ($USER->has_completed_all_modules())
+      $USER->make_eligible_for_assessment();
   }
   HuskyHuntLog::log_last_attempt();
   echo json_encode($retjson);

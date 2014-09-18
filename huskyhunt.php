@@ -17,7 +17,7 @@ define('NETID', $NETID);
 class HuskyHuntLog {
 
   private static $filepath = '/var/log/huskyhunt.log';
-  private static function strip($str) {
+  public static function strip($str) {
     $str = preg_replace('/<[^>]+>/', '', $str);
     $str = preg_replace('/&nbsp;/', ' ', $str);
     $str = preg_replace('/&rsquo;/', '\'', $str);
@@ -163,7 +163,6 @@ class Set {
     return count($this->arr);
   }
 }
-
 class HuskyHuntDatabase {
 
     private static $_instance = NULL;
@@ -1204,6 +1203,112 @@ class HuskyHuntQuestion {
 
 }
 
+class HuskyHuntAssessment {
+  private static $_instance = NULL;
+  public $assessment_id = NULL;
+  public $body = '';
+  public $points = 0;
+  public $questions = array();
+  public $question_ids = array();
+
+  static function shared_instance() {
+    static $instance = null;
+    if (null === $instance) {
+      $instance = new self();
+    }
+    return $instance;
+  }
+
+  function __construct() {
+    if (is_null($this->assessment_id))
+      $this->load();
+  }
+
+  private function load() {
+    $db = HuskyHuntDatabase::shared_database();
+    $SQL = 'SELECT * FROM assessments WHERE assessment_id = 1';
+    if ($stmt = $db->prepare($SQL)) {
+      if ($stmt->execute()) {
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $this->assessment_id = 1;
+        $this->body = $row['body'];
+        $this->points = $row['points'];
+        $this->load_questions();
+      }
+    }
+  }
+  private function load_questions() {
+    $db = HuskyHuntDatabase::shared_database();
+    $SQL    = 'SELECT question_id FROM map_aq WHERE assessment_id = 1';
+    if ($stmt = $db->prepare($SQL)) {
+      $stmt->execute();
+      while ($result = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $id = $result['question_id'];
+        $this->question_ids[] = $id;
+        $this->questions[$id] = new HuskyHuntQuestion($id);
+      }
+    }
+  }
+  function get_question($question_id) {
+    $question = NULL;  
+    if (array_key_exists($question_id, $this->questions)) 
+      $question = $this->questions[$question_id];
+    return $question;
+  }
+  function remove_question($question) {
+    $db = HuskyHuntDatabase::shared_database();
+    $SQL = 'DELETE FROM map_aq WHERE assessment_id = 1 AND question_id = :question_id LIMIT 1'; 
+    $result = true;
+    if ($question instanceof HuskyHuntQuestion) {
+      $question->save();
+      if (!is_null($this->assessment_id) && !is_null($question->get_id())) {
+        if ($stmt = $db->prepare($SQL)) {
+          $stmt->bindParam(':question_id', $question->get_id());
+          $stmt->execute();      
+          $result = ($stmt->rowCount() == 1);      
+          if ($result) 
+            HuskyHuntAdmin::purge_dangling_questions();
+        }
+      }
+    }
+    return $result;
+  }
+  function add_question($question) {
+    $db = HuskyHuntDatabase::shared_database();
+    $SQL    = 'INSERT INTO `map_aq` (assessment_id, question_id) VALUES (1, :question_id)';
+    $result = true;
+    if ($question instanceof HuskyHuntQuestion) {
+      $question->save();
+      if (!is_null($this->assessment_id) && !is_null($question->get_id())) {
+        if ($stmt = $db->prepare($SQL)) {      
+          $stmt->bindParam(':question_id', $question->get_id());
+          $stmt->execute();
+          $result = ($stmt->errorCode() == 0);
+        }
+      }
+    }
+    return $result;
+  }
+  
+  function save() {
+    $db = HuskyHuntDatabase::shared_database();
+    $SQL = 'UPDATE assessments SET body=:body, points = :points WHERE assessment_id = 1';
+    $result     = false;
+    if ($stmt = $db->prepare($SQL)) {
+      $stmt->bindValue(':body', $this->body, PDO::PARAM_STR);
+      $stmt->bindValue(':points', $this->points, PDO::PARAM_INT);
+      $db->beginTransaction();
+      $result = $stmt->execute(); 
+      if (!$result && HH_DEBUG) {
+        die($stmt->errorCode());
+      }
+      $db->commit();
+    }
+    return $result; 
+  }
+
+}
+
 
 class HuskyHuntModule {
 
@@ -1229,6 +1334,18 @@ class HuskyHuntModule {
         if (!is_null($module_id))
             $this->load($module_id);
 
+    }
+    static function select_all() {
+      $modules = array();
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT module_id FROM modules';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->execute();
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+          $modules[] = new HuskyHuntModule($row['module_id']);
+        }
+        return $modules;
+      }
     }
     function get_question_ids() {
       return $this->question_ids;
@@ -1866,11 +1983,70 @@ class HuskyHuntUser {
       }
       return $complete;
     }
+    public function has_completed_all_modules() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT module_id FROM grades WHERE user_id = :user_id AND complete = 1';
+      $completed_modules = array();
+      $total_modules = array();
+      $res = false;
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        if ($stmt->execute()) {
+          while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $completed_modules[] = $row['module_id'];
+          }
+          $SQL = 'SELECT module_id FROM modules';
+          if ($stmt = $db->prepare($SQL)) {
+            $stmt->execute();
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+              $total_modules[] = $row['module_id'];
+            }
+            if (count(array_diff($total_modules, $completed_modules)) === 0)
+              $res = true;
+          }
+        }
+      }
+      return $res;
+    }
+    public function make_eligible_for_assessment() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'INSERT IGNORE INTO assessment_grades (user_id) VALUES (:user_id)';
+      $success = true;
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        $success &= $stmt->execute();
+      } else {
+        $success = false;
+      }
+      return $success;
+    }
+    public function is_eligible_for_assessment() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT TRUE FROM assessment_grades WHERE user_id = :user_id AND score IS NULL';
+      $res = false;
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        if ($result = $stmt->execute()) {
+          $res = $stmt->rowCount() === 1;
+        }
+      }
+      return $res;
+    }
+    public function has_completed_assessment() {
+      $db = HuskyHuntDatabase::shared_database();
+      $SQL = 'SELECT TRUE FROM assessment_grades WHERE user_id = :user_id AND score IS NOT NULL';
+      $res = false;
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':user_id', $this->user_id);
+        if ($result = $stmt->execute())
+          $res = $stmt->rowCount() === 1;
+      }
+      return $res;
+    }
     public function retention_rate() {
       $days_passed = ceil(min(time(), HuskyHunt::get_statistic_end_date()) - $this->date_joined)/86400;
       return (float) $this->count_active_days()/$days_passed;
     }
-
     public function num_completed_levels() {
       $db = HuskyHuntDatabase::shared_database();
       $SQL = 'SELECT scavenger_hunt, other FROM completed WHERE user_id=:user_id';
@@ -1911,6 +2087,11 @@ class HuskyHuntUser {
         $stmt->bindValue(':netid', $this->netid);
         $success &= $stmt->execute();
       }
+      $SQL = 'DELETE FROM assessment_grades WHERE user_id = :user_id';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindValue(':user_id', $this->user_id);
+        $success &= $stmt->execute();
+      }
       return $success;
     }
     public function daily_module() {
@@ -1935,6 +2116,7 @@ class HuskyHuntUser {
 
         return $module_id;
     }
+ 
     function login($password) {
       if ($ds = ldap_connect(LDAPURL)) {
         @ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -1966,6 +2148,23 @@ class HuskyHuntUser {
         }
        
       }
+    }
+    function submit_assessment($num_correct) {
+      $db = HuskyHuntDatabase::shared_database();
+      $assessment = HuskyHuntAssessment::shared_instance();
+      $score = floor($num_correct*$assessment->points/count($assessment->question->ids));
+      $SQL = 'UPDATE assessment_grades SET score = :score WHERE user_id = :user_id';
+      if ($stmt = $db->prepare($SQL)) {
+        $stmt->bindParam(':score', $score);
+        $stmt->bindParam(':user_id', $this->user_id);
+        if ($stmt->execute()) {
+          $this->score += $score;
+          $this->save();
+          return true;
+        }
+        return false;
+      }
+      return false;
     }
     function badges_json() {
       $badges = array();
